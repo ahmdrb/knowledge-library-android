@@ -1,6 +1,7 @@
 package com.knowledgelibrary
 
 import android.content.ActivityNotFoundException
+import android.net.Uri
 import android.os.Bundle
 import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
@@ -14,6 +15,7 @@ import org.json.JSONObject
 class MainActivity : ComponentActivity() {
 
     private lateinit var webView: WebView
+    private var pendingBackup: String? = null
 
     private val openTextFile =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -32,6 +34,26 @@ class MainActivity : ComponentActivity() {
                     Toast.makeText(
                         this,
                         "Could not import file: ${e.message ?: "read error"}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
+
+    private val createBackupFile =
+        registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri: Uri? ->
+            val backup = pendingBackup
+            pendingBackup = null
+            if (uri != null && backup != null) {
+                try {
+                    contentResolver.openOutputStream(uri)?.bufferedWriter(Charsets.UTF_8)?.use {
+                        it.write(backup)
+                    } ?: throw IllegalStateException("Could not write the selected file.")
+                    Toast.makeText(this, "Backup saved successfully.", Toast.LENGTH_LONG).show()
+                } catch (e: Exception) {
+                    Toast.makeText(
+                        this,
+                        "Could not save backup: ${e.message ?: "write error"}",
                         Toast.LENGTH_LONG
                     ).show()
                 }
@@ -64,12 +86,29 @@ class MainActivity : ComponentActivity() {
             runOnUiThread {
                 try {
                     openTextFile.launch(
-                        arrayOf("text/plain", "application/octet-stream")
+                        arrayOf("text/plain", "application/json", "application/octet-stream", "*/*")
                     )
                 } catch (e: ActivityNotFoundException) {
                     Toast.makeText(
                         this@MainActivity,
                         "No file picker is available.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
+
+        @JavascriptInterface
+        fun exportBackup(json: String) {
+            runOnUiThread {
+                try {
+                    pendingBackup = json
+                    createBackupFile.launch("knowledge-library-backup.json")
+                } catch (e: ActivityNotFoundException) {
+                    pendingBackup = null
+                    Toast.makeText(
+                        this@MainActivity,
+                        "No save-file picker is available.",
                         Toast.LENGTH_LONG
                     ).show()
                 }

@@ -27,7 +27,7 @@
       <option value="">Any package</option>
     </select>
   </div>
-  <div class="toolbar"><button id="importBtn">＋ Import .txt outline</button><button class="secondary" id="homeBtn">Library home</button></div>
+  <div class="toolbar"><button id="importBtn">＋ Import .txt outline</button><button class="secondary" id="importBackupBtn">Import backup</button><button class="secondary" id="exportBackupBtn">Export backup</button><button class="secondary" id="homeBtn">Library home</button></div>
   <div id="status" class="notice" role="status">Imported packages stay on this device.</div>
   <section id="searchResults"></section>
   <section id="homeView"><div class="section-title">Your packages</div><div id="packages"></div></section>
@@ -86,8 +86,60 @@
     return {title:rootLine,nodes:root.children};
   }
   function setStatus(s){$("status").textContent=s;}
-  function importFile(){ if(window.NativeLibrary&&typeof window.NativeLibrary.importTextFile==="function") window.NativeLibrary.importTextFile(); else setStatus("Open this app on Android to import a text file."); }
+  let importMode="outline";
+  function importFile(mode="outline"){
+    importMode=mode;
+    if(window.NativeLibrary&&typeof window.NativeLibrary.importTextFile==="function") window.NativeLibrary.importTextFile();
+    else setStatus("Open this app on Android to import a file.");
+  }
+  function cloneBackupNode(node,depth=0){
+    if(depth>100)throw new Error("The backup hierarchy is too deeply nested.");
+    if(!node||typeof node!=="object"||Array.isArray(node)||typeof node.title!=="string"||!node.title.trim())
+      throw new Error("A concept has a missing or invalid title.");
+    if(node.children!==undefined&&!Array.isArray(node.children))
+      throw new Error("A concept's children must be a list.");
+    return {id:id(),title:node.title.trim(),children:(node.children||[]).map(child=>cloneBackupNode(child,depth+1))};
+  }
+  function parseBackup(raw){
+    const data=JSON.parse(raw.replace(/^\uFEFF/,""));
+    if(!data||typeof data!=="object"||data.format!=="knowledge-library-backup"||data.version!==1||!Array.isArray(data.packages))
+      throw new Error("This is not a supported Knowledge Library backup (version 1).");
+    if(data.packages.length>10000)throw new Error("The backup contains too many packages.");
+    const seen=new Set();
+    const imported=data.packages.map(p=>{
+      if(!p||typeof p.title!=="string"||!p.title.trim()||!Array.isArray(p.nodes))
+        throw new Error("Every package must have a title and a concepts list.");
+      const title=p.title.trim(), key=title.toLocaleLowerCase();
+      if(seen.has(key))throw new Error('The backup contains duplicate package titles: "'+title+'".');
+      seen.add(key);
+      return {id:id(),title,nodes:p.nodes.map(n=>cloneBackupNode(n)),importedAt:typeof p.importedAt==="string"?p.importedAt:new Date().toISOString()};
+    });
+    return imported;
+  }
   window.receiveImportedOutline = function(raw){
+    if(importMode==="backup"){
+      const previousPackages=packages;
+      try{
+        const imported=parseBackup(raw);
+        if(!confirm("Replace your entire library with "+imported.length+" package(s) from this backup? Choose Cancel to keep your current library and consider merging instead.")){
+          if(!confirm("Merge the backup into your current library? Packages with matching titles will be replaced. Choose Cancel to leave everything unchanged.")){
+            setStatus("Backup import cancelled.");return;
+          }
+          const byTitle=new Map(packages.map(p=>[p.title.toLocaleLowerCase(),p]));
+          for(const p of imported)byTitle.set(p.title.toLocaleLowerCase(),p);
+          packages=Array.from(byTitle.values());
+        }else{
+          packages=imported;
+        }
+        save();currentPackageId=null;currentNodeId=null;expanded=new Set();
+        $("search").value="";render();setStatus("Backup imported: "+imported.length+" package(s), "+imported.reduce((sum,p)=>sum+countNodes(p),0)+" concepts.");
+      }catch(e){
+        packages=previousPackages;
+        alert("Could not import backup:\\n"+e.message+"\\n\\nYour existing library was not changed.");
+      }
+      finally{importMode="outline";}
+      return;
+    }
     try{
       const parsed=parseOutline(raw);
       const existing=packages.find(p=>p.title.toLocaleLowerCase()===parsed.title.toLocaleLowerCase());
@@ -98,8 +150,18 @@
       }else packages.unshift(pkg);
       save();currentPackageId=pkg.id;currentNodeId=null;expanded=new Set();
       $("search").value="";render();setStatus('Imported "'+parsed.title+'". '+countNodes(pkg)+' concepts saved on this device.');
-    }catch(e){alert("Could not import outline:\n"+e.message+"\n\nCheck that the first line is the title and each nested level uses exactly four spaces.");}
+    }catch(e){alert("Could not import outline:\\n"+e.message+"\\n\\nCheck that the first line is the title and each nested level uses exactly four spaces.");}
+    finally{importMode="outline";}
   };
+  function exportBackup(){
+    const backup={format:"knowledge-library-backup",version:1,exportedAt:new Date().toISOString(),packages:packages};
+    const raw=JSON.stringify(backup,null,2);
+    if(window.NativeLibrary&&typeof window.NativeLibrary.exportBackup==="function"){
+      window.NativeLibrary.exportBackup(raw);
+    }else{
+      setStatus("Open this app on Android to save a backup file.");
+    }
+  }
   function renderHome(){
     $("homeView").classList.remove("hidden");$("detailView").classList.add("hidden");$("searchResults").innerHTML="";
     const host=$("packages");
@@ -261,7 +323,9 @@
   }
     window.openSearchHit=function(pid,nid){openPackage(pid);currentNodeId=nid;renderDetail();};
   function render(){const q=$("search").value;if(q.trim())search(q);else renderHome();}
-  $("importBtn").addEventListener("click",importFile);
+  $("importBtn").addEventListener("click",()=>importFile("outline"));
+  $("importBackupBtn").addEventListener("click",()=>importFile("backup"));
+  $("exportBackupBtn").addEventListener("click",exportBackup);
   $("homeBtn").addEventListener("click",()=>{$("search").value="";currentPackageId=null;currentNodeId=null;renderHome();});
   $("search").addEventListener("input",e=>search(e.target.value));
   $("searchScope").addEventListener("change",()=>search($("search").value));
