@@ -8,7 +8,7 @@
 <style>
 :root{font-family:system-ui,-apple-system,Roboto,sans-serif;color-scheme:light dark;--bg:#f5f6fa;--panel:#fff;--text:#202333;--muted:#687084;--line:#dfe3ec;--accent:#425bd5;--soft:#e9edff}
 @media(prefers-color-scheme:dark){:root{--bg:#10131a;--panel:#1b202b;--text:#eef1fa;--muted:#aab2c4;--line:#343b4a;--accent:#a6b3ff;--soft:#2b3459}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text)}header{padding:22px 16px 14px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:3}h1{font-size:23px;margin:0 0 5px}.sub{color:var(--muted);font-size:13px}.wrap{max-width:900px;margin:auto;padding:16px}.row{display:flex;gap:8px;align-items:center}.search{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);font-size:16px;margin:10px 0}button{border:0;border-radius:10px;padding:11px 13px;background:var(--accent);color:white;font-weight:650;font-size:14px;cursor:pointer}button.secondary{background:var(--soft);color:var(--text)}button.danger{background:#a62d42;color:white}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px}.section-title{font-size:12px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:18px 2px 8px}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin:8px 0}.pkg{display:flex;align-items:center;gap:12px}.pkgmain{min-width:0;flex:1}.pkgtitle{font-weight:750;font-size:16px;overflow-wrap:anywhere}.meta{font-size:12px;color:var(--muted);margin-top:4px}.treeitem{border-bottom:1px solid var(--line);padding:10px 0}.treeitem:last-child{border-bottom:0}.treebtn{display:flex;align-items:flex-start;gap:8px;width:100%;padding:5px 0;text-align:left;background:transparent;color:var(--text);font-weight:550}.chev{color:var(--accent);width:20px;flex:none}.nodetitle{flex:1;overflow-wrap:anywhere}.nodeactions{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 0 28px}.small{font-size:12px;padding:7px 9px}.crumb{color:var(--muted);font-size:13px;line-height:1.6;margin:8px 0 14px;overflow-wrap:anywhere}.empty{text-align:center;padding:28px 12px;color:var(--muted)}.result{cursor:pointer}.result strong{display:block}.highlight{background:var(--soft);border-radius:3px}.notice{color:var(--muted);font-size:12px;line-height:1.5}.hidden{display:none!important}footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text)}header{padding:22px 16px 14px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:3}h1{font-size:23px;margin:0 0 5px}.sub{color:var(--muted);font-size:13px}.wrap{max-width:900px;margin:auto;padding:16px}.row{display:flex;gap:8px;align-items:center}.search{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);font-size:16px;margin:10px 0}button{border:0;border-radius:10px;padding:11px 13px;background:var(--accent);color:white;font-weight:650;font-size:14px;cursor:pointer}button.secondary{background:var(--soft);color:var(--text)}button.danger{background:#a62d42;color:white}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px}.section-title{font-size:12px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:18px 2px 8px}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin:8px 0}.pkg{display:flex;align-items:center;gap:12px}.pkgmain{min-width:0;flex:1}.pkgtitle{font-weight:750;font-size:16px;overflow-wrap:anywhere}.meta{font-size:12px;color:var(--muted);margin-top:4px}.treeitem{border-bottom:1px solid var(--line);padding:10px 0}.treeitem:last-child{border-bottom:0}.treebtn{display:flex;align-items:flex-start;gap:8px;width:100%;padding:5px 0;text-align:left;background:transparent;color:var(--text);font-weight:550}.chev{color:var(--accent);width:20px;flex:none}.nodetitle{flex:1;overflow-wrap:anywhere}.nodeactions{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 0 28px}.small{font-size:12px;padding:7px 9px}.crumb{color:var(--muted);font-size:13px;line-height:1.6;margin:8px 0 14px;overflow-wrap:anywhere}.empty{text-align:center;padding:28px 12px;color:var(--muted)}.result{cursor:pointer}.result strong{display:block}.highlight{background:var(--soft);border-radius:3px}.notice{color:var(--muted);font-size:12px;line-height:1.5}.editor-panel{margin:10px 0 16px}.editor-help{color:var(--muted);font-size:12px;line-height:1.5;margin:0 0 8px}.outline-editor{display:block;width:100%;min-height:55vh;resize:vertical;padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);font:14px/1.6 monospace;white-space:pre;tab-size:4}.hidden{display:none!important}footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
 </style>
 </head>
 <body>
@@ -106,13 +106,50 @@
     const path=found?found.path.map(n=>n.title):[p.title];
     $("detailView").innerHTML=`<div class="crumb"><a href="#" onclick="openPackage('${p.id}');return false">⌂ ${escapeHtml(p.title)}</a>${found?' / '+path.slice(1).map(escapeHtml).join(' / '):''}</div>
     <div class="card"><div class="pkgtitle">${escapeHtml(found?found.node.title:p.title)}</div><div class="meta">${found?countNodes({nodes:[found.node]})+' concepts below':' '+countNodes(p)+' concepts in this package'}</div>
-    <div class="toolbar"><button class="secondary" onclick="goParent()">↑ Parent</button><button class="secondary" onclick="expandAll()">Expand all</button><button class="secondary" onclick="collapseAll()">Collapse all</button></div></div>
+    <div class="toolbar"><button class="secondary" onclick="goParent()">↑ Parent</button><button class="secondary" onclick="expandAll()">Expand all</button><button class="secondary" onclick="collapseAll()">Collapse all</button><button onclick="editOutline()">✎ Edit outline</button></div></div>
+    <div id="outlineEditorPanel" class="card editor-panel hidden"><div class="pkgtitle">Edit outline text</div><p class="editor-help">Edit the title and text below. Use four spaces for each nested level. Saving updates this package on your device.</p><textarea id="outlineEditor" class="outline-editor" spellcheck="false" aria-label="Edit outline text"></textarea><div class="toolbar"><button onclick="saveOutlineEdit()">Save changes</button><button class="secondary" onclick="cancelOutlineEdit()">Cancel</button></div></div>
     <div class="section-title">${found?'Subcategories and concepts':'Main categories'}</div><div id="treeHost"></div>`;
     renderTree(shown,"treeHost",0);
     if(found&&found.node.children.length===0){
       $("treeHost").innerHTML='<div class="card"><div class="section-title">Concept reference</div><p>'+escapeHtml(found.node.title)+'</p><div class="notice">This outline contains a title for this concept. Add a note or source link in a future library update if you want to store expanded reference material.</div></div>';
     }
   }
+  function outlineToText(p){
+    const lines=[p.title];
+    function walk(nodes,level){
+      for(const n of nodes||[]){
+        lines.push("    ".repeat(level)+n.title);
+        walk(n.children||[],level+1);
+      }
+    }
+    walk(p.nodes,0);
+    return lines.join("\n");
+  }
+  window.editOutline=function(){
+    const p=getPackage();if(!p)return;
+    $("outlineEditor").value=outlineToText(p);
+    $("outlineEditorPanel").classList.remove("hidden");
+    $("treeHost").classList.add("hidden");
+    $("outlineEditor").focus();
+  };
+  window.cancelOutlineEdit=function(){
+    $("outlineEditorPanel").classList.add("hidden");
+    $("treeHost").classList.remove("hidden");
+  };
+  window.saveOutlineEdit=function(){
+    const p=getPackage();if(!p)return;
+    try{
+      const parsed=parseOutline($("outlineEditor").value);
+      const updated={...p,title:parsed.title,nodes:parsed.nodes,editedAt:new Date().toISOString()};
+      packages=packages.map(item=>item.id===p.id?updated:item);
+      save();
+      currentPackageId=updated.id;currentNodeId=null;expanded=new Set();
+      renderDetail();
+      setStatus('Saved changes to "'+updated.title+'". Your edits are stored on this device.');
+    }catch(e){
+      alert("Could not save outline:\n"+e.message+"\n\nUse four spaces per nested level, and make sure the first line is the package title.");
+    }
+  };
   function renderTree(nodes,hostId,depth){
     const host=$(hostId);if(!host)return;
     if(!nodes.length){host.innerHTML='<div class="empty">No subcategories at this level.</div>';return;}
