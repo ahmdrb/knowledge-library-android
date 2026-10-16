@@ -8,13 +8,25 @@
 <style>
 :root{font-family:system-ui,-apple-system,Roboto,sans-serif;color-scheme:light dark;--bg:#f5f6fa;--panel:#fff;--text:#202333;--muted:#687084;--line:#dfe3ec;--accent:#425bd5;--soft:#e9edff}
 @media(prefers-color-scheme:dark){:root{--bg:#10131a;--panel:#1b202b;--text:#eef1fa;--muted:#aab2c4;--line:#343b4a;--accent:#a6b3ff;--soft:#2b3459}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text)}header{padding:22px 16px 14px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:3}h1{font-size:23px;margin:0 0 5px}.sub{color:var(--muted);font-size:13px}.wrap{max-width:900px;margin:auto;padding:16px}.row{display:flex;gap:8px;align-items:center}.search{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);font-size:16px;margin:10px 0}button{border:0;border-radius:10px;padding:11px 13px;background:var(--accent);color:white;font-weight:650;font-size:14px;cursor:pointer}button.secondary{background:var(--soft);color:var(--text)}button.danger{background:#a62d42;color:white}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px}.section-title{font-size:12px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:18px 2px 8px}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin:8px 0}.pkg{display:flex;align-items:center;gap:12px}.pkgmain{min-width:0;flex:1}.pkgtitle{font-weight:750;font-size:16px;overflow-wrap:anywhere}.meta{font-size:12px;color:var(--muted);margin-top:4px}.treeitem{border-bottom:1px solid var(--line);padding:10px 0}.treeitem:last-child{border-bottom:0}.treebtn{display:flex;align-items:flex-start;gap:5px;width:100%;padding:6px 0;text-align:left;background:transparent;color:var(--text);font-weight:550}.nodetitle{flex:1;min-width:0;text-align:left;overflow-wrap:anywhere}.nodeactions{display:flex;gap:6px;flex-wrap:wrap;margin:5px 0 0 0}.small{font-size:12px;padding:7px 9px}.crumb{color:var(--muted);font-size:13px;line-height:1.6;margin:8px 0 14px;overflow-wrap:anywhere}.empty{text-align:center;padding:28px 12px;color:var(--muted)}.result{cursor:pointer}.result strong{display:block}.highlight{background:var(--soft);border-radius:3px}.notice{color:var(--muted);font-size:12px;line-height:1.5}.editor-panel{margin:10px 0 16px}.editor-help{color:var(--muted);font-size:12px;line-height:1.5;margin:0 0 8px}.outline-editor{display:block;width:100%;min-height:55vh;resize:vertical;padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);font:14px/1.6 monospace;white-space:pre;tab-size:4}.hidden{display:none!important}footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text)}header{padding:22px 16px 14px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:3}h1{font-size:23px;margin:0 0 5px}.sub{color:var(--muted);font-size:13px}.wrap{max-width:900px;margin:auto;padding:16px}.row{display:flex;gap:8px;align-items:center}.search-controls{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px 10px;align-items:center;margin:0 0 12px}.filter-label{font-size:12px;color:var(--muted);font-weight:650}.filter-select{width:100%;min-width:0;padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);font:inherit;font-size:14px}.search{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);font-size:16px;margin:10px 0}button{border:0;border-radius:10px;padding:11px 13px;background:var(--accent);color:white;font-weight:650;font-size:14px;cursor:pointer}button.secondary{background:var(--soft);color:var(--text)}button.danger{background:#a62d42;color:white}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px}.section-title{font-size:12px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:18px 2px 8px}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin:8px 0}.pkg{display:flex;align-items:center;gap:12px}.pkgmain{min-width:0;flex:1}.pkgtitle{font-weight:750;font-size:16px;overflow-wrap:anywhere}.meta{font-size:12px;color:var(--muted);margin-top:4px}.treeitem{border-bottom:1px solid var(--line);padding:10px 0}.treeitem:last-child{border-bottom:0}.treebtn{display:flex;align-items:flex-start;gap:5px;width:100%;padding:6px 0;text-align:left;background:transparent;color:var(--text);font-weight:550}.nodetitle{flex:1;min-width:0;text-align:left;overflow-wrap:anywhere}.nodeactions{display:flex;gap:6px;flex-wrap:wrap;margin:5px 0 0 0}.small{font-size:12px;padding:7px 9px}.crumb{color:var(--muted);font-size:13px;line-height:1.6;margin:8px 0 14px;overflow-wrap:anywhere}.empty{text-align:center;padding:28px 12px;color:var(--muted)}.result{cursor:pointer}.result strong{display:block}.highlight{background:var(--soft);border-radius:3px}.notice{color:var(--muted);font-size:12px;line-height:1.5}.editor-panel{margin:10px 0 16px}.editor-help{color:var(--muted);font-size:12px;line-height:1.5;margin:0 0 8px}.outline-editor{display:block;width:100%;min-height:55vh;resize:vertical;padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);font:14px/1.6 monospace;white-space:pre;tab-size:4}.hidden{display:none!important}footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
 </style>
 </head>
 <body>
 <header><h1>Knowledge Library</h1><div class="sub">Your searchable, offline knowledge map</div></header>
 <main class="wrap">
   <div class="row"><input id="search" class="search" placeholder="Search packages and concepts…" autocomplete="off" aria-label="Search packages and concepts"></div>
+  <div class="search-controls">
+    <label class="filter-label" for="searchScope">Search in</label>
+    <select id="searchScope" class="filter-select" aria-label="Search scope">
+      <option value="all">Packages and concepts</option>
+      <option value="packages">Package titles only</option>
+      <option value="concepts">Concepts only</option>
+    </select>
+    <label class="filter-label" for="searchPackage">Package</label>
+    <select id="searchPackage" class="filter-select" aria-label="Limit search to a package">
+      <option value="">Any package</option>
+    </select>
+  </div>
   <div class="toolbar"><button id="importBtn">＋ Import .txt outline</button><button class="secondary" id="homeBtn">Library home</button></div>
   <div id="status" class="notice" role="status">Imported packages stay on this device.</div>
   <section id="searchResults"></section>
@@ -207,27 +219,53 @@
   window.goParent=function(){if(!currentNodeId){renderHome();return;}const p=getPackage(),f=findNode(p.nodes,currentNodeId);if(f&&f.path.length>1)currentNodeId=f.path[f.path.length-2].id;else currentNodeId=null;renderDetail();};
   window.expandAll=function(){const p=getPackage();if(p)for(const n of allNodes(p.nodes))if(n.children.length)expanded.add(n.id);renderDetail();};
   window.collapseAll=function(){expanded.clear();renderDetail();};
+  function refreshSearchPackageOptions(){
+    const select=$("searchPackage");
+    if(!select)return;
+    const previous=select.value;
+    select.innerHTML='<option value="">Any package</option>'+packages.map(p=>'<option value="'+escapeHtml(p.id)+'">'+escapeHtml(p.title)+'</option>').join("");
+    if(packages.some(p=>p.id===previous))select.value=previous;
+  }
   function search(q){
-    const out=$("searchResults");const query=q.trim().toLocaleLowerCase();
-    if(!query){out.innerHTML="";$("homeView").classList.remove("hidden");$("detailView").classList.add("hidden");return;}
-    $("homeView").classList.add("hidden");$("detailView").classList.add("hidden");
+    const out=$("searchResults");
+    const query=q.trim().toLocaleLowerCase();
+    refreshSearchPackageOptions();
+    if(!query){
+      out.innerHTML="";
+      $("homeView").classList.remove("hidden");
+      $("detailView").classList.add("hidden");
+      return;
+    }
+    $("homeView").classList.add("hidden");
+    $("detailView").classList.add("hidden");
+    const scope=$("searchScope").value;
+    const selectedPackageId=$("searchPackage").value;
     const hits=[];
     for(const p of packages){
-      if(p.title.toLocaleLowerCase().includes(query))hits.push({type:"Package",title:p.title,pkg:p,path:p.title,packageHit:true});
-      for(const n of allNodes(p.nodes)){
-        if(n.title.toLocaleLowerCase().includes(query)){
-          const f=findNode(p.nodes,n.id);
-          hits.push({type:"Concept",title:n.title,pkg:p,path:p.title+" / "+f.path.map(x=>x.title).join(" / "),node:n});
+      if(selectedPackageId && p.id!==selectedPackageId)continue;
+      if(scope!=="concepts" && p.title.toLocaleLowerCase().includes(query)){
+        hits.push({type:"Package",title:p.title,pkg:p,path:p.title,packageHit:true});
+      }
+      if(scope!=="packages"){
+        for(const n of allNodes(p.nodes)){
+          if(n.title.toLocaleLowerCase().includes(query)){
+            const f=findNode(p.nodes,n.id);
+            hits.push({type:"Concept",title:n.title,pkg:p,path:p.title+" / "+f.path.map(x=>x.title).join(" / "),node:n});
+          }
         }
       }
     }
-    out.innerHTML=`<div class="section-title">Search results · ${hits.length}</div>`+(hits.length?hits.slice(0,250).map(h=>`<div class="card result" onclick="${h.packageHit?`openPackage('${h.pkg.id}')`:`openSearchHit('${h.pkg.id}','${h.node.id}')`}"><div class="meta">${h.type}</div><strong>${escapeHtml(h.title)}</strong><div class="meta">${escapeHtml(h.path)}</div></div>`).join(""):'<div class="empty">No matching package or concept found.</div>');
+    const scopeLabel=scope==="packages"?"package titles":scope==="concepts"?"concepts":"packages and concepts";
+    out.innerHTML=`<div class="section-title">Search results · ${hits.length} <span class="meta">(${scopeLabel})</span></div>`+
+      (hits.length?hits.slice(0,250).map(h=>`<div class="card result" onclick="${h.packageHit?`openPackage('${h.pkg.id}')`:`openSearchHit('${h.pkg.id}','${h.node.id}')`}"><div class="meta">${h.type}</div><strong>${escapeHtml(h.title)}</strong><div class="meta">${escapeHtml(h.path)}</div></div>`).join(""):'<div class="empty">No matching package or concept found with these filters.</div>');
   }
-  window.openSearchHit=function(pid,nid){openPackage(pid);currentNodeId=nid;renderDetail();};
+    window.openSearchHit=function(pid,nid){openPackage(pid);currentNodeId=nid;renderDetail();};
   function render(){const q=$("search").value;if(q.trim())search(q);else renderHome();}
   $("importBtn").addEventListener("click",importFile);
   $("homeBtn").addEventListener("click",()=>{$("search").value="";currentPackageId=null;currentNodeId=null;renderHome();});
   $("search").addEventListener("input",e=>search(e.target.value));
+  $("searchScope").addEventListener("change",()=>search($("search").value));
+  $("searchPackage").addEventListener("change",()=>search($("search").value));
   window.canGoBackInLibrary=()=>!!currentPackageId||!!$("search").value;
   window.handleAndroidBack=()=>{if($("search").value){$("search").value="";search("");return true;}if(currentNodeId){goParent();return true;}if(currentPackageId){currentPackageId=null;renderHome();return true;}return false;};
   renderHome();
