@@ -153,12 +153,23 @@
     host.innerHTML=nodes.map(n=>{
       const has=n.children&&n.children.length, isOpen=expanded.has(n.id);
       return `<div class="treeitem"><button class="treebtn" onclick="selectNode('${n.id}')"><span class="nodetitle">${escapeHtml(n.title)}</span><span class="meta">${has?n.children.length+' children':''}</span></button>
-      <div class="nodeactions"><button class="secondary small" onclick="openNode('${n.id}')">Open</button><button class="secondary small" onclick="editNode('${n.id}')">Edit</button><button class="secondary small" onclick="addChild('${n.id}')">＋ Add child</button>${has?`<button class="secondary small" onclick="toggleNode('${n.id}')">${isOpen?'Collapse':'Expand'}</button>`:''}</div>
+      <div class="nodeactions"><button class="secondary small" onclick="openNode('${n.id}')">Open</button><button class="secondary small" onclick="editNode('${n.id}')">Edit</button><button class="secondary small" onclick="addChild('${n.id}')">＋ Add child</button><button class="danger small" onclick="deleteNode('${n.id}')">Delete</button>${has?`<button class="secondary small" onclick="toggleNode('${n.id}')">${isOpen?'Collapse':'Expand'}</button>`:''}</div>
       ${has&&isOpen?`<div style="padding-left:8px" id="children-${n.id}"></div>`:''}</div>`;
     }).join("");
     for(const n of nodes) if(n.children&&n.children.length&&expanded.has(n.id)){const el=$("children-"+n.id);if(el)renderTree(n.children,el.id,depth+1);}
   }
-  window.selectNode=function(nid){const p=getPackage();if(!p)return;const f=findNode(p.nodes,nid);if(!f)return;if(f.node.children.length){if(expanded.has(nid))expanded.delete(nid);else expanded.add(nid);renderDetail();}else openNode(nid);};
+  window.selectNode=function(nid){openNode(nid);};
+  window.deleteNode=function(nid){
+    const p=getPackage();if(!p)return;
+    const f=findNode(p.nodes,nid);if(!f)return;
+    if(!confirm('Delete "'+f.node.title+'" and all its descendants? This cannot be undone.'))return;
+    if(f.parent)f.parent.children=f.parent.children.filter(n=>n.id!==nid);
+    else p.nodes=p.nodes.filter(n=>n.id!==nid);
+    for(const n of allNodes([f.node]))expanded.delete(n.id);
+    p.editedAt=new Date().toISOString();
+    save();renderDetail();
+    setStatus("Concept and its descendants deleted.");
+  };
   window.editNode=function(nid){
     const p=getPackage();if(!p)return;
     const f=findNode(p.nodes,nid);if(!f)return;
