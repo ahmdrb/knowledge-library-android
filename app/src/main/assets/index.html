@@ -106,7 +106,7 @@
     const path=found?found.path.map(n=>n.title):[p.title];
     $("detailView").innerHTML=`<div class="crumb"><a href="#" onclick="openPackage('${p.id}');return false">⌂ ${escapeHtml(p.title)}</a>${found?' / '+path.slice(1).map(escapeHtml).join(' / '):''}</div>
     <div class="card"><div class="pkgtitle">${escapeHtml(found?found.node.title:p.title)}</div><div class="meta">${found?countNodes({nodes:[found.node]})+' concepts below':' '+countNodes(p)+' concepts in this package'}</div>
-    <div class="toolbar"><button class="secondary" onclick="goParent()">↑ Parent</button><button class="secondary" onclick="expandAll()">Expand all</button><button class="secondary" onclick="collapseAll()">Collapse all</button><button onclick="addChild(currentNodeId)">＋ Add item</button><button class="secondary" onclick="editOutline()">✎ Edit outline</button></div></div>
+    <div class="toolbar"><button class="secondary" onclick="goParent()">↑ Parent</button><button class="secondary" onclick="expandAll()">Expand all</button><button class="secondary" onclick="collapseAll()">Collapse all</button><button onclick="addItem()">＋ Add item</button><button class="secondary" onclick="editOutline()">✎ Edit outline</button></div></div>
     <div id="outlineEditorPanel" class="card editor-panel hidden"><div class="pkgtitle">Edit outline text</div><p class="editor-help">Edit the title and text below. Use four spaces for each nested level. Saving updates this package on your device.</p><textarea id="outlineEditor" class="outline-editor" spellcheck="false" aria-label="Edit outline text"></textarea><div class="toolbar"><button onclick="saveOutlineEdit()">Save changes</button><button class="secondary" onclick="cancelOutlineEdit()">Cancel</button></div></div>
     <div class="section-title">${found?'Subcategories and concepts':'Main categories'}</div><div id="treeHost"></div>`;
     renderTree(shown,"treeHost",0);
@@ -152,7 +152,7 @@
     if(!nodes.length){host.innerHTML='<div class="empty">No subcategories at this level.</div>';return;}
     host.innerHTML=nodes.map(n=>{
       const has=n.children&&n.children.length, isOpen=expanded.has(n.id);
-      return `<div class="treeitem"><button class="treebtn" onclick="selectNode('${n.id}')"><span class="nodetitle">${escapeHtml(n.title)}</span><span class="meta">${has?n.children.length+' children':''}</span></button>
+      return `<div class="treeitem"><button class="treebtn" type="button"><span class="nodetitle">${escapeHtml(n.title)}</span><span class="meta">${has?n.children.length+' children':''}</span></button>
       <div class="nodeactions"><button class="secondary small" onclick="openNode('${n.id}')">Open</button><button class="secondary small" onclick="editNode('${n.id}')">Edit</button><button class="secondary small" onclick="addChild('${n.id}')">＋ Add child</button><button class="danger small" onclick="deleteNode('${n.id}')">Delete</button>${has?`<button class="secondary small" onclick="toggleNode('${n.id}')">${isOpen?'Collapse':'Expand'}</button>`:''}</div>
       ${has&&isOpen?`<div style="padding-left:8px" id="children-${n.id}"></div>`:''}</div>`;
     }).join("");
@@ -201,6 +201,7 @@
     save();renderDetail();
     setStatus("New concept added and saved on this device.");
   };
+  window.addItem=function(){addChild(currentNodeId);};
   window.toggleNode=function(nid){if(expanded.has(nid))expanded.delete(nid);else expanded.add(nid);renderDetail();};
   window.openNode=function(nid){currentNodeId=nid;renderDetail();};
   window.goParent=function(){if(!currentNodeId){renderHome();return;}const p=getPackage(),f=findNode(p.nodes,currentNodeId);if(f&&f.path.length>1)currentNodeId=f.path[f.path.length-2].id;else currentNodeId=null;renderDetail();};
