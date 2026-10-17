@@ -172,7 +172,7 @@
   }
   window.togglePackageSelection=function(pid,checked){if(checked)selectedPackages.add(pid);else selectedPackages.delete(pid);renderHome();};
   window.toggleAllPackages=function(checked){selectedPackages=checked?new Set(packages.map(p=>p.id)):new Set();renderHome();};
-  window.clearPackageSelection=function(){selectedPackages.clear();renderHome();};
+  window.clearPackageSelection=function(){selectedPackages=new Set();renderHome();setStatus("Package selection cleared.");};
   window.deleteSelectedPackages=function(){const ids=packages.filter(p=>selectedPackages.has(p.id)).map(p=>p.id);if(!ids.length){setStatus("No packages selected.");return;}if(!confirm("Delete "+ids.length+" selected package(s) from this device? This cannot be undone."))return;packages=packages.filter(p=>!selectedPackages.has(p.id));selectedPackages.clear();if(ids.includes(currentPackageId))currentPackageId=null;save();renderHome();setStatus(ids.length+" package(s) deleted.");};
   window.openPackage=function(pid){selectedNodes.clear();currentPackageId=pid;currentNodeId=null;expanded=new Set();renderDetail();};
   window.deletePackage=function(pid){const p=packages.find(x=>x.id===pid);if(p&&confirm('Delete "'+p.title+'" from this device? This cannot be undone.')){packages=packages.filter(x=>x.id!==pid);selectedPackages.delete(pid);save();if(currentPackageId===pid)currentPackageId=null;render();setStatus("Package deleted.");}};
