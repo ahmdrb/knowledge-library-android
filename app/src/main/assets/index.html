@@ -8,7 +8,7 @@
 <style>
 :root{font-family:system-ui,-apple-system,Roboto,sans-serif;color-scheme:light dark;--bg:#f5f6fa;--panel:#fff;--text:#202333;--muted:#687084;--line:#dfe3ec;--accent:#425bd5;--soft:#e9edff}
 @media(prefers-color-scheme:dark){:root{--bg:#10131a;--panel:#1b202b;--text:#eef1fa;--muted:#aab2c4;--line:#343b4a;--accent:#a6b3ff;--soft:#2b3459}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text)}header{padding:22px 16px 14px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:3}h1{font-size:23px;margin:0 0 5px}.sub{color:var(--muted);font-size:13px}.wrap{max-width:900px;margin:auto;padding:16px}.row{display:flex;gap:8px;align-items:center}.search-controls{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px 10px;align-items:center;margin:0 0 12px}.filter-label{font-size:12px;color:var(--muted);font-weight:650}.filter-select{width:100%;min-width:0;padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);font:inherit;font-size:14px}.search{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);font-size:16px;margin:10px 0}button{border:0;border-radius:10px;padding:11px 13px;background:var(--accent);color:white;font-weight:650;font-size:14px;cursor:pointer}button.secondary{background:var(--soft);color:var(--text)}button.danger{background:#a62d42;color:white}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px}.section-title{font-size:12px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:18px 2px 8px}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin:8px 0}.pkg{display:flex;align-items:center;gap:12px}.pkgmain{min-width:0;flex:1}.pkgtitle{font-weight:750;font-size:16px;overflow-wrap:anywhere}.meta{font-size:12px;color:var(--muted);margin-top:4px}.treeitem{border-bottom:1px solid var(--line);padding:10px 0}.treeitem:last-child{border-bottom:0}.treebtn{display:flex;align-items:flex-start;gap:5px;width:100%;padding:6px 0;text-align:left;background:transparent;color:var(--text);font-weight:550}.nodetitle{flex:1;min-width:0;text-align:left;overflow-wrap:anywhere}.nodeactions{display:flex;gap:6px;flex-wrap:wrap;margin:5px 0 0 0}.small{font-size:12px;padding:7px 9px}.crumb{color:var(--muted);font-size:13px;line-height:1.6;margin:8px 0 14px;overflow-wrap:anywhere}.empty{text-align:center;padding:28px 12px;color:var(--muted)}.result{cursor:pointer}.result strong{display:block}.highlight{background:var(--soft);border-radius:3px}.notice{color:var(--muted);font-size:12px;line-height:1.5}.editor-panel{margin:10px 0 16px}.editor-help{color:var(--muted);font-size:12px;line-height:1.5;margin:0 0 8px}.outline-editor{display:block;width:100%;min-height:55vh;resize:vertical;padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);font:14px/1.6 monospace;white-space:pre;tab-size:4}.hidden{display:none!important}footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text)}header{padding:22px 16px 14px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:3}h1{font-size:23px;margin:0 0 5px}.sub{color:var(--muted);font-size:13px}.wrap{max-width:900px;margin:auto;padding:16px}.row{display:flex;gap:8px;align-items:center}.search-controls{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px 10px;align-items:center;margin:0 0 12px}.filter-label{font-size:12px;color:var(--muted);font-weight:650}.filter-select{width:100%;min-width:0;padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);font:inherit;font-size:14px}.search{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);font-size:16px;margin:10px 0}button{border:0;border-radius:10px;padding:11px 13px;background:var(--accent);color:white;font-weight:650;font-size:14px;cursor:pointer}button.secondary{background:var(--soft);color:var(--text)}button.danger{background:#a62d42;color:white}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px}.section-title{font-size:12px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:18px 2px 8px}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin:8px 0}.pkg{display:flex;align-items:center;gap:12px}.pkgmain{min-width:0;flex:1}.pkgtitle{font-weight:750;font-size:16px;overflow-wrap:anywhere}.meta{font-size:12px;color:var(--muted);margin-top:4px}.treeitem{border-bottom:1px solid var(--line);padding:10px 0}.treeitem:last-child{border-bottom:0}.treebtn{display:flex;align-items:flex-start;gap:5px;width:100%;padding:6px 0;text-align:left;background:transparent;color:var(--text);font-weight:550}.nodetitle{flex:1;min-width:0;text-align:left;overflow-wrap:anywhere}.nodeactions{display:flex;gap:6px;flex-wrap:wrap;margin:5px 0 0 0}.small{font-size:12px;padding:7px 9px}.crumb{color:var(--muted);font-size:13px;line-height:1.6;margin:8px 0 14px;overflow-wrap:anywhere}.empty{text-align:center;padding:28px 12px;color:var(--muted)}.result{cursor:pointer}.result strong{display:block}.highlight{background:var(--soft);border-radius:3px}.notice{color:var(--muted);font-size:12px;line-height:1.5}.editor-panel{margin:10px 0 16px}.editor-help{color:var(--muted);font-size:12px;line-height:1.5;margin:0 0 8px}.outline-editor{display:block;width:100%;min-height:55vh;resize:vertical;padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);font:14px/1.6 monospace;white-space:pre;tab-size:4}.bulkbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px;background:var(--soft);border-radius:12px;margin:10px 0}.bulkbar label,.pickitem{display:inline-flex;gap:7px;align-items:center;font-size:13px}.bulkbar input,.pickitem input{width:18px;height:18px;accent-color:var(--accent)}.pickitem{margin:0 8px 4px 0}.hidden{display:none!important}footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
 </style>
 </head>
 <body>
@@ -42,6 +42,8 @@
   let currentPackageId = null;
   let currentNodeId = null;
   let expanded = new Set();
+  let selectedPackages = new Set();
+  let selectedNodes = new Set();
   let nextId = 1;
 
   function load(){ try { const v=JSON.parse(localStorage.getItem(STORE)||"[]"); return Array.isArray(v)?v:[]; } catch(e){ return []; } }
@@ -166,10 +168,14 @@
     $("homeView").classList.remove("hidden");$("detailView").classList.add("hidden");$("searchResults").innerHTML="";
     const host=$("packages");
     if(!packages.length){host.innerHTML=`<div class="card empty"><div style="font-size:28px;margin-bottom:8px">▤</div><strong>Your library is empty</strong><p>Import any outline saved as a plain-text .txt file to get started.</p><button onclick="document.getElementById('importBtn').click()">Import first outline</button></div>`;return;}
-    host.innerHTML=packages.map(p=>`<div class="card pkg"><div class="pkgmain"><div class="pkgtitle">${escapeHtml(p.title)}</div><div class="meta">${countNodes(p)} concepts · Imported ${new Date(p.importedAt).toLocaleDateString()}</div></div><button onclick="openPackage('${p.id}')">Open</button><button class="danger small" onclick="deletePackage('${p.id}')">Delete</button></div>`).join("");
+    host.innerHTML=`<div class="bulkbar"><label><input type="checkbox" ${packages.length && packages.every(p=>selectedPackages.has(p.id))?"checked":""} onchange="toggleAllPackages(this.checked)"> Select all packages</label><span>${selectedPackages.size} selected</span><button class="danger small" onclick="deleteSelectedPackages()">Delete selected</button><button class="secondary small" onclick="clearPackageSelection()">Clear</button></div>`+packages.map(p=>`<div class="card pkg"><label class="pickitem"><input type="checkbox" ${selectedPackages.has(p.id)?"checked":""} onchange="togglePackageSelection('${p.id}',this.checked)"> Select</label><div class="pkgmain"><div class="pkgtitle">${escapeHtml(p.title)}</div><div class="meta">${countNodes(p)} concepts · Imported ${new Date(p.importedAt).toLocaleDateString()}</div></div><button onclick="openPackage('${p.id}')">Open</button><button class="danger small" onclick="deletePackage('${p.id}')">Delete</button></div>`).join("");
   }
-  window.openPackage=function(pid){currentPackageId=pid;currentNodeId=null;expanded=new Set();renderDetail();};
-  window.deletePackage=function(pid){const p=packages.find(x=>x.id===pid);if(p&&confirm('Delete "'+p.title+'" from this device? This cannot be undone.')){packages=packages.filter(x=>x.id!==pid);save();if(currentPackageId===pid)currentPackageId=null;render();setStatus("Package deleted.");}};
+  window.togglePackageSelection=function(pid,checked){if(checked)selectedPackages.add(pid);else selectedPackages.delete(pid);renderHome();};
+  window.toggleAllPackages=function(checked){selectedPackages=checked?new Set(packages.map(p=>p.id)):new Set();renderHome();};
+  window.clearPackageSelection=function(){selectedPackages.clear();renderHome();};
+  window.deleteSelectedPackages=function(){const ids=packages.filter(p=>selectedPackages.has(p.id)).map(p=>p.id);if(!ids.length){setStatus("No packages selected.");return;}if(!confirm("Delete "+ids.length+" selected package(s) from this device? This cannot be undone."))return;packages=packages.filter(p=>!selectedPackages.has(p.id));selectedPackages.clear();if(ids.includes(currentPackageId))currentPackageId=null;save();renderHome();setStatus(ids.length+" package(s) deleted.");};
+  window.openPackage=function(pid){selectedNodes.clear();currentPackageId=pid;currentNodeId=null;expanded=new Set();renderDetail();};
+  window.deletePackage=function(pid){const p=packages.find(x=>x.id===pid);if(p&&confirm('Delete "'+p.title+'" from this device? This cannot be undone.')){packages=packages.filter(x=>x.id!==pid);selectedPackages.delete(pid);save();if(currentPackageId===pid)currentPackageId=null;render();setStatus("Package deleted.");}};
   function getPackage(){return packages.find(p=>p.id===currentPackageId);}
   function findNode(nodes,nid,parent=null,path=[]){for(const n of nodes){const next=[...path,n];if(n.id===nid)return {node:n,parent,path:next};const f=findNode(n.children||[],nid,n,next);if(f)return f;}return null;}
   function renderDetail(){
@@ -182,7 +188,7 @@
     <div class="card"><div class="pkgtitle">${escapeHtml(found?found.node.title:p.title)}</div><div class="meta">${found?countNodes({nodes:[found.node]})+' concepts below':' '+countNodes(p)+' concepts in this package'}</div>
     <div class="toolbar"><button class="secondary" onclick="goParent()">↑ Parent</button><button class="secondary" onclick="expandAll()">Expand all</button><button class="secondary" onclick="collapseAll()">Collapse all</button><button onclick="addItem()">＋ Add item</button><button class="secondary" onclick="editOutline()">✎ Edit outline</button></div></div>
     <div id="outlineEditorPanel" class="card editor-panel hidden"><div class="pkgtitle">Edit outline text</div><p class="editor-help">Edit the title and text below. Use four spaces for each nested level. Saving updates this package on your device.</p><textarea id="outlineEditor" class="outline-editor" spellcheck="false" aria-label="Edit outline text"></textarea><div class="toolbar"><button onclick="saveOutlineEdit()">Save changes</button><button class="secondary" onclick="cancelOutlineEdit()">Cancel</button></div></div>
-    <div class="section-title">${found?'Subcategories and concepts':'Main categories'}</div><div id="treeHost"></div>`;
+    <div class="section-title">${found?'Subcategories and concepts':'Main categories'}</div><div class="bulkbar"><label><input type="checkbox" ${shown.length && shown.every(n=>selectedNodes.has(n.id))?"checked":""} onchange="toggleAllNodes(this.checked)"> Select all at this level</label><span>${shown.filter(n=>selectedNodes.has(n.id)).length} selected</span><button class="danger small" onclick="deleteSelectedNodes()">Delete selected</button><button class="secondary small" onclick="moveSelectedNodes()">Move selected</button><button class="secondary small" onclick="transferSelectedNodes()">Transfer to package</button><button class="secondary small" onclick="clearNodeSelection()">Clear</button></div><div id="treeHost"></div>`;
     renderTree(shown,"treeHost",0);
   }
   function outlineToText(p){
@@ -226,12 +232,88 @@
     if(!nodes.length){host.innerHTML='<div class="empty">No subcategories at this level.</div>';return;}
     host.innerHTML=nodes.map(n=>{
       const has=n.children&&n.children.length, isOpen=expanded.has(n.id);
-      return `<div class="treeitem"><button class="treebtn" type="button"><span class="nodetitle">${escapeHtml(n.title)}</span><span class="meta">${has?n.children.length+' children':''}</span></button>
+      return `<div class="treeitem">${depth===0?`<label class="pickitem"><input type="checkbox" ${selectedNodes.has(n.id)?"checked":""} onchange="toggleNodeSelection(\'${n.id}\',this.checked)"> Select</label>`:""}<button class="treebtn" type="button"><span class="nodetitle">${escapeHtml(n.title)}</span><span class="meta">${has?n.children.length+' children':''}</span></button>
       <div class="nodeactions"><button class="secondary small" onclick="openNode('${n.id}')">Open</button><button class="secondary small" onclick="editNode('${n.id}')">Edit</button><button class="secondary small" onclick="addChild('${n.id}')">＋ Add child</button><button class="danger small" onclick="deleteNode('${n.id}')">Delete</button>${has?`<button class="secondary small" onclick="toggleNode('${n.id}')">${isOpen?'Collapse':'Expand'}</button>`:''}</div>
       ${has&&isOpen?`<div style="padding-left:8px" id="children-${n.id}"></div>`:''}</div>`;
     }).join("");
     for(const n of nodes) if(n.children&&n.children.length&&expanded.has(n.id)){const el=$("children-"+n.id);if(el)renderTree(n.children,el.id,depth+1);}
   }
+  window.toggleNodeSelection=function(nid,checked){if(checked)selectedNodes.add(nid);else selectedNodes.delete(nid);renderDetail();};
+  window.toggleAllNodes=function(checked){const p=getPackage();if(!p)return;const f=currentNodeId?findNode(p.nodes,currentNodeId):null;const shown=f?f.node.children:p.nodes;selectedNodes=checked?new Set(shown.map(n=>n.id)):new Set();renderDetail();};
+  window.clearNodeSelection=function(){selectedNodes.clear();renderDetail();};
+  window.deleteSelectedNodes=function(){const p=getPackage();if(!p)return;const f=currentNodeId?findNode(p.nodes,currentNodeId):null;const list=f?f.node.children:p.nodes;const ids=new Set(list.filter(n=>selectedNodes.has(n.id)).map(n=>n.id));if(!ids.size){setStatus("No concepts selected at this level.");return;}if(!confirm("Delete "+ids.size+" selected concept(s) and all their descendants? This cannot be undone."))return;const removed=list.filter(n=>ids.has(n.id));for(const n of removed)for(const child of allNodes([n]))expanded.delete(child.id);if(f)f.node.children=list.filter(n=>!ids.has(n.id));else p.nodes=list.filter(n=>!ids.has(n.id));selectedNodes.clear();p.editedAt=new Date().toISOString();save();renderDetail();setStatus(ids.size+" concept(s) and their descendants deleted.");};
+
+  window.moveSelectedNodes=function(){
+    const p=getPackage();if(!p)return;
+    const current=currentNodeId?findNode(p.nodes,currentNodeId):null;
+    const source=current?current.node.children:p.nodes;
+    const moving=source.filter(n=>selectedNodes.has(n.id));
+    if(!moving.length){setStatus("Select items at this level first.");return;}
+
+    const forbidden=new Set();
+    for(const n of moving)for(const item of allNodes([n]))forbidden.add(item.id);
+    const candidates=allNodes(p.nodes).filter(n=>!forbidden.has(n.id));
+    const choices=["0. Package root",...candidates.map((n,i)=>(i+1)+". "+n.title)];
+    const answer=prompt("Move "+moving.length+" selected item(s) into which destination?\n\n"+choices.join("\n")+"\n\nEnter the number. Moving a category moves all its descendants.");
+    if(answer===null)return;
+    const choice=answer.trim();
+    if(!/^\d+$/.test(choice)){alert("Enter a valid destination number.");return;}
+    const index=Number(choice);
+    if(index<0||index>candidates.length){alert("That destination number is not valid.");return;}
+
+    const destination=index===0?null:candidates[index-1];
+    const target=destination?destination.children:p.nodes;
+    if(target===source){setStatus("Those items are already in that location.");return;}
+    if(!confirm("Move "+moving.length+" selected item(s)"+(destination?' into "'+destination.title+'"':' to the package root')+"?"))return;
+
+    const movingIds=new Set(moving.map(n=>n.id));
+    const remaining=source.filter(n=>!movingIds.has(n.id));
+    if(current)current.node.children=remaining;
+    else p.nodes=remaining;
+    if(destination){
+      if(!Array.isArray(destination.children))destination.children=[];
+      destination.children.push(...moving);
+      expanded.add(destination.id);
+    }else{
+      p.nodes.push(...moving);
+    }
+    selectedNodes.clear();
+    p.editedAt=new Date().toISOString();
+    save();renderDetail();
+    setStatus(moving.length+" item(s) moved with their descendants.");
+  };
+
+  window.transferSelectedNodes=function(){
+    const sourcePackage=getPackage();if(!sourcePackage)return;
+    const current=currentNodeId?findNode(sourcePackage.nodes,currentNodeId):null;
+    const source=current?current.node.children:sourcePackage.nodes;
+    const moving=source.filter(n=>selectedNodes.has(n.id));
+    if(!moving.length){setStatus("Select items at this level first.");return;}
+
+    const destinations=packages.filter(p=>p.id!==sourcePackage.id);
+    if(!destinations.length){alert("Import or create another package before transferring items.");return;}
+    const choices=destinations.map((p,i)=>(i+1)+". "+p.title);
+    const answer=prompt("Transfer "+moving.length+" selected item(s) to which package?\n\n"+choices.join("\n")+"\n\nEnter the package number.");
+    if(answer===null)return;
+    const choice=answer.trim();
+    if(!/^\d+$/.test(choice)){alert("Enter a valid package number.");return;}
+    const index=Number(choice)-1;
+    if(index<0||index>=destinations.length){alert("That package number is not valid.");return;}
+    const destination=destinations[index];
+    if(!confirm("Transfer "+moving.length+" item(s) and all their descendants from \""+sourcePackage.title+"\" to \""+destination.title+"\"?"))return;
+
+    const movingIds=new Set(moving.map(n=>n.id));
+    if(current)current.node.children=source.filter(n=>!movingIds.has(n.id));
+    else sourcePackage.nodes=source.filter(n=>!movingIds.has(n.id));
+    destination.nodes.push(...moving);
+    const now=new Date().toISOString();
+    sourcePackage.editedAt=now;
+    destination.editedAt=now;
+    selectedNodes.clear();
+    save();renderDetail();
+    setStatus(moving.length+" item(s) transferred to \""+destination.title+"\" with their descendants.");
+  };
+
   window.selectNode=function(nid){openNode(nid);};
   window.deleteNode=function(nid){
     const p=getPackage();if(!p)return;
@@ -277,8 +359,8 @@
   };
   window.addItem=function(){addChild(currentNodeId);};
   window.toggleNode=function(nid){if(expanded.has(nid))expanded.delete(nid);else expanded.add(nid);renderDetail();};
-  window.openNode=function(nid){currentNodeId=nid;renderDetail();};
-  window.goParent=function(){if(!currentNodeId){renderHome();return;}const p=getPackage(),f=findNode(p.nodes,currentNodeId);if(f&&f.path.length>1)currentNodeId=f.path[f.path.length-2].id;else currentNodeId=null;renderDetail();};
+  window.openNode=function(nid){selectedNodes.clear();currentNodeId=nid;renderDetail();};
+  window.goParent=function(){if(!currentNodeId){selectedNodes.clear();renderHome();return;}const p=getPackage(),f=findNode(p.nodes,currentNodeId);if(f&&f.path.length>1)currentNodeId=f.path[f.path.length-2].id;else currentNodeId=null;selectedNodes.clear();renderDetail();};
   window.expandAll=function(){const p=getPackage();if(p)for(const n of allNodes(p.nodes))if(n.children.length)expanded.add(n.id);renderDetail();};
   window.collapseAll=function(){expanded.clear();renderDetail();};
   function refreshSearchPackageOptions(){
