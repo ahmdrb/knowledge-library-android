@@ -45,6 +45,7 @@
   let selectedPackages = new Set();
   let packageSelectionMode = false;
   let selectedNodes = new Set();
+  let nodeSelectionMode = false;
   let nextId = 1;
 
   function load(){ try { const v=JSON.parse(localStorage.getItem(STORE)||"[]"); return Array.isArray(v)?v:[]; } catch(e){ return []; } }
@@ -177,7 +178,7 @@
   window.toggleAllPackages=function(checked){selectedPackages=checked?new Set(packages.map(p=>p.id)):new Set();renderHome();};
   window.clearPackageSelection=function(){selectedPackages=new Set();renderHome();setStatus("Package selection cleared.");};
   window.deleteSelectedPackages=function(){const ids=packages.filter(p=>selectedPackages.has(p.id)).map(p=>p.id);if(!ids.length){setStatus("No packages selected.");return;}if(!confirm("Delete "+ids.length+" selected package(s) from this device? This cannot be undone."))return;packages=packages.filter(p=>!selectedPackages.has(p.id));selectedPackages.clear();if(ids.includes(currentPackageId))currentPackageId=null;save();renderHome();setStatus(ids.length+" package(s) deleted.");};
-  window.openPackage=function(pid){selectedNodes.clear();currentPackageId=pid;currentNodeId=null;expanded=new Set();renderDetail();};
+  window.openPackage=function(pid){selectedNodes.clear();nodeSelectionMode=false;currentPackageId=pid;currentNodeId=null;expanded=new Set();renderDetail();};
   window.deletePackage=function(pid){const p=packages.find(x=>x.id===pid);if(p&&confirm('Delete "'+p.title+'" from this device? This cannot be undone.')){packages=packages.filter(x=>x.id!==pid);selectedPackages.delete(pid);save();if(currentPackageId===pid)currentPackageId=null;render();setStatus("Package deleted.");}};
   function getPackage(){return packages.find(p=>p.id===currentPackageId);}
   function findNode(nodes,nid,parent=null,path=[]){for(const n of nodes){const next=[...path,n];if(n.id===nid)return {node:n,parent,path:next};const f=findNode(n.children||[],nid,n,next);if(f)return f;}return null;}
@@ -191,7 +192,7 @@
     <div class="card"><div class="pkgtitle">${escapeHtml(found?found.node.title:p.title)}</div><div class="meta">${found?countNodes({nodes:[found.node]})+' concepts below':' '+countNodes(p)+' concepts in this package'}</div>
     <div class="toolbar"><button class="secondary" onclick="goParent()">↑ Parent</button><button class="secondary" onclick="expandAll()">Expand all</button><button class="secondary" onclick="collapseAll()">Collapse all</button><button onclick="addItem()">＋ Add item</button><button class="secondary" onclick="editOutline()">✎ Edit outline</button></div></div>
     <div id="outlineEditorPanel" class="card editor-panel hidden"><div class="pkgtitle">Edit outline text</div><p class="editor-help">Edit the title and text below. Use four spaces for each nested level. Saving updates this package on your device.</p><textarea id="outlineEditor" class="outline-editor" spellcheck="false" aria-label="Edit outline text"></textarea><div class="toolbar"><button onclick="saveOutlineEdit()">Save changes</button><button class="secondary" onclick="cancelOutlineEdit()">Cancel</button></div></div>
-    <div class="section-title">${found?'Subcategories and concepts':'Main categories'}</div><div class="bulkbar"><label><input type="checkbox" ${shown.length && shown.every(n=>selectedNodes.has(n.id))?"checked":""} onchange="toggleAllNodes(this.checked)"> Select all at this level</label><span>${shown.filter(n=>selectedNodes.has(n.id)).length} selected</span><button class="danger small" onclick="deleteSelectedNodes()">Delete selected</button><button class="secondary small" onclick="moveSelectedNodes()">Move selected</button><button class="secondary small" onclick="transferSelectedNodes()">Transfer to package</button><button class="secondary small" onclick="clearNodeSelection()">Clear</button></div><div id="treeHost"></div>`;
+    <div class="section-title">${found?'Subcategories and concepts':'Main categories'}</div>${nodeSelectionMode ? `<div class="bulkbar"><label><input type="checkbox" ${shown.length && shown.every(n=>selectedNodes.has(n.id))?"checked":""} onchange="toggleAllNodes(this.checked)"> Select all at this level</label><span>${shown.filter(n=>selectedNodes.has(n.id)).length} selected</span><button class="danger small" onclick="deleteSelectedNodes()">Delete selected</button><button class="secondary small" onclick="moveSelectedNodes()">Move selected</button><button class="secondary small" onclick="transferSelectedNodes()">Transfer to package</button><button class="secondary small" onclick="clearNodeSelection()">Clear</button><button class="secondary small" onclick="cancelNodeSelection()">Cancel</button></div>` : `<div class="toolbar"><button class="secondary small" onclick="startNodeSelection()">Select concepts</button></div>`}<div id="treeHost"></div>`;
     renderTree(shown,"treeHost",0);
   }
   function outlineToText(p){
@@ -235,15 +236,17 @@
     if(!nodes.length){host.innerHTML='<div class="empty">No subcategories at this level.</div>';return;}
     host.innerHTML=nodes.map(n=>{
       const has=n.children&&n.children.length, isOpen=expanded.has(n.id);
-      return `<div class="treeitem">${depth===0?`<label class="pickitem"><input type="checkbox" ${selectedNodes.has(n.id)?"checked":""} onchange="toggleNodeSelection(\'${n.id}\',this.checked)"> Select</label>`:""}<button class="treebtn" type="button"><span class="nodetitle">${escapeHtml(n.title)}</span><span class="meta">${has?n.children.length+' children':''}</span></button>
+      return `<div class="treeitem">${depth===0&&nodeSelectionMode?`<label class="pickitem"><input type="checkbox" ${selectedNodes.has(n.id)?"checked":""} onchange="toggleNodeSelection(\'${n.id}\',this.checked)"> Select</label>`:""}<button class="treebtn" type="button"><span class="nodetitle">${escapeHtml(n.title)}</span><span class="meta">${has?n.children.length+' children':''}</span></button>
       <div class="nodeactions"><button class="secondary small" onclick="openNode('${n.id}')">Open</button><button class="secondary small" onclick="editNode('${n.id}')">Edit</button><button class="secondary small" onclick="addChild('${n.id}')">＋ Add child</button><button class="danger small" onclick="deleteNode('${n.id}')">Delete</button>${has?`<button class="secondary small" onclick="toggleNode('${n.id}')">${isOpen?'Collapse':'Expand'}</button>`:''}</div>
       ${has&&isOpen?`<div style="padding-left:8px" id="children-${n.id}"></div>`:''}</div>`;
     }).join("");
     for(const n of nodes) if(n.children&&n.children.length&&expanded.has(n.id)){const el=$("children-"+n.id);if(el)renderTree(n.children,el.id,depth+1);}
   }
+  window.startNodeSelection=function(){selectedNodes.clear();nodeSelectionMode=true;renderDetail();};
+  window.cancelNodeSelection=function(){selectedNodes.clear();nodeSelectionMode=false;renderDetail();setStatus("Concept selection cancelled.");};
   window.toggleNodeSelection=function(nid,checked){if(checked)selectedNodes.add(nid);else selectedNodes.delete(nid);renderDetail();};
   window.toggleAllNodes=function(checked){const p=getPackage();if(!p)return;const f=currentNodeId?findNode(p.nodes,currentNodeId):null;const shown=f?f.node.children:p.nodes;selectedNodes=checked?new Set(shown.map(n=>n.id)):new Set();renderDetail();};
-  window.clearNodeSelection=function(){selectedNodes.clear();renderDetail();};
+  window.clearNodeSelection=function(){selectedNodes.clear();renderDetail();setStatus("Concept selection cleared.");};
   window.deleteSelectedNodes=function(){const p=getPackage();if(!p)return;const f=currentNodeId?findNode(p.nodes,currentNodeId):null;const list=f?f.node.children:p.nodes;const ids=new Set(list.filter(n=>selectedNodes.has(n.id)).map(n=>n.id));if(!ids.size){setStatus("No concepts selected at this level.");return;}if(!confirm("Delete "+ids.size+" selected concept(s) and all their descendants? This cannot be undone."))return;const removed=list.filter(n=>ids.has(n.id));for(const n of removed)for(const child of allNodes([n]))expanded.delete(child.id);if(f)f.node.children=list.filter(n=>!ids.has(n.id));else p.nodes=list.filter(n=>!ids.has(n.id));selectedNodes.clear();p.editedAt=new Date().toISOString();save();renderDetail();setStatus(ids.size+" concept(s) and their descendants deleted.");};
 
   window.moveSelectedNodes=function(){
@@ -362,8 +365,8 @@
   };
   window.addItem=function(){addChild(currentNodeId);};
   window.toggleNode=function(nid){if(expanded.has(nid))expanded.delete(nid);else expanded.add(nid);renderDetail();};
-  window.openNode=function(nid){selectedNodes.clear();currentNodeId=nid;renderDetail();};
-  window.goParent=function(){if(!currentNodeId){selectedNodes.clear();renderHome();return;}const p=getPackage(),f=findNode(p.nodes,currentNodeId);if(f&&f.path.length>1)currentNodeId=f.path[f.path.length-2].id;else currentNodeId=null;selectedNodes.clear();renderDetail();};
+  window.openNode=function(nid){selectedNodes.clear();nodeSelectionMode=false;currentNodeId=nid;renderDetail();};
+  window.goParent=function(){if(!currentNodeId){selectedNodes.clear();nodeSelectionMode=false;renderHome();return;}const p=getPackage(),f=findNode(p.nodes,currentNodeId);if(f&&f.path.length>1)currentNodeId=f.path[f.path.length-2].id;else currentNodeId=null;selectedNodes.clear();nodeSelectionMode=false;renderDetail();};
   window.expandAll=function(){const p=getPackage();if(p)for(const n of allNodes(p.nodes))if(n.children.length)expanded.add(n.id);renderDetail();};
   window.collapseAll=function(){expanded.clear();renderDetail();};
   function refreshSearchPackageOptions(){
