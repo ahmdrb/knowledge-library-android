@@ -43,6 +43,7 @@
   let currentNodeId = null;
   let expanded = new Set();
   let selectedPackages = new Set();
+  let packageSelectionMode = false;
   let selectedNodes = new Set();
   let nextId = 1;
 
@@ -168,9 +169,11 @@
     $("homeView").classList.remove("hidden");$("detailView").classList.add("hidden");$("searchResults").innerHTML="";
     const host=$("packages");
     if(!packages.length){host.innerHTML=`<div class="card empty"><div style="font-size:28px;margin-bottom:8px">▤</div><strong>Your library is empty</strong><p>Import any outline saved as a plain-text .txt file to get started.</p><button onclick="document.getElementById('importBtn').click()">Import first outline</button></div>`;return;}
-    host.innerHTML=`<div class="bulkbar"><label><input type="checkbox" ${packages.length && packages.every(p=>selectedPackages.has(p.id))?"checked":""} onchange="toggleAllPackages(this.checked)"> Select all packages</label><span>${selectedPackages.size} selected</span><button class="danger small" onclick="deleteSelectedPackages()">Delete selected</button><button class="secondary small" onclick="clearPackageSelection()">Clear</button></div>`+packages.map(p=>`<div class="card pkg"><label class="pickitem"><input type="checkbox" ${selectedPackages.has(p.id)?"checked":""} onchange="togglePackageSelection('${p.id}',this.checked)"> Select</label><div class="pkgmain"><div class="pkgtitle">${escapeHtml(p.title)}</div><div class="meta">${countNodes(p)} concepts · Imported ${new Date(p.importedAt).toLocaleDateString()}</div></div><button onclick="openPackage('${p.id}')">Open</button><button class="danger small" onclick="deletePackage('${p.id}')">Delete</button></div>`).join("");
+    const toolbar=packageSelectionMode ? `<div class="bulkbar"><label><input type="checkbox" ${packages.length && packages.every(p=>selectedPackages.has(p.id))?"checked":""} onchange="toggleAllPackages(this.checked)"> Select all packages</label><span>${selectedPackages.size} selected</span><button class="danger small" onclick="deleteSelectedPackages()">Delete selected</button><button class="secondary small" onclick="clearPackageSelection()">Clear</button><button class="secondary small" onclick="cancelPackageSelection()">Cancel</button></div>` : `<div class="toolbar"><button class="secondary small" onclick="startPackageSelection()">Select packages</button></div>`; host.innerHTML=toolbar+packages.map(p=>`<div class="card pkg"><label class="pickitem" style="${packageSelectionMode?"":"display:none"}"><input type="checkbox" ${selectedPackages.has(p.id)?"checked":""} onchange="togglePackageSelection('${p.id}',this.checked)"> Select</label><div class="pkgmain"><div class="pkgtitle">${escapeHtml(p.title)}</div><div class="meta">${countNodes(p)} concepts · Imported ${new Date(p.importedAt).toLocaleDateString()}</div></div><button onclick="openPackage('${p.id}')">Open</button><button class="danger small" onclick="deletePackage('${p.id}')">Delete</button></div>`).join("");
   }
+  window.startPackageSelection=function(){packageSelectionMode=true;selectedPackages=new Set();renderHome();};
   window.togglePackageSelection=function(pid,checked){if(checked)selectedPackages.add(pid);else selectedPackages.delete(pid);renderHome();};
+  window.cancelPackageSelection=function(){selectedPackages=new Set();packageSelectionMode=false;renderHome();setStatus("Package selection cancelled.");};
   window.toggleAllPackages=function(checked){selectedPackages=checked?new Set(packages.map(p=>p.id)):new Set();renderHome();};
   window.clearPackageSelection=function(){selectedPackages=new Set();renderHome();setStatus("Package selection cleared.");};
   window.deleteSelectedPackages=function(){const ids=packages.filter(p=>selectedPackages.has(p.id)).map(p=>p.id);if(!ids.length){setStatus("No packages selected.");return;}if(!confirm("Delete "+ids.length+" selected package(s) from this device? This cannot be undone."))return;packages=packages.filter(p=>!selectedPackages.has(p.id));selectedPackages.clear();if(ids.includes(currentPackageId))currentPackageId=null;save();renderHome();setStatus(ids.length+" package(s) deleted.");};
