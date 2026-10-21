@@ -39,7 +39,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
       <option value="">Any package</option>
     </select>
   </div>
-  <div class="toolbar"><button id="importBtn">＋ Import .txt outline</button><button class="secondary" id="importBackupBtn">Import backup</button><button class="secondary" id="exportBackupBtn">Export backup</button><button class="secondary" id="homeBtn">Library home</button><button class="secondary" id="favoritesBtn">★ Favorites</button></div>
+  <div class="toolbar"><button id="importBtn">＋ Import .txt outline</button><button class="secondary" id="importBackupBtn">Import backup</button><button class="secondary" id="exportBackupBtn">Export backup</button><button class="secondary" id="homeBtn">Library home</button></div>
   <div id="status" class="notice" role="status">Imported packages stay on this device.</div>
   <section id="searchResults"></section>
   <section id="homeView"><div class="section-title">Your packages</div><div id="packages"></div></section>
@@ -147,37 +147,77 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
   };
   function parseOutline(raw){
     const lines=raw.replace(/^\uFEFF/,"").replace(/\r\n?/g,"\n").split("\n");
-    const meaningful=lines.filter(x=>x.trim().length>0);
+    const meaningful=lines
+      .map((text,index)=>({text,lineNo:index+1}))
+      .filter(entry=>entry.text.trim().length>0);
+
     if(!meaningful.length) throw new Error("The file has no outline lines.");
-    const rootLine=meaningful[0].trim().replace(/^\d+\.\s*/,"").trim();
+
+    const cleanTitle=text=>text.trim().replace(/^\d+\.\s*/,"").trim();
+    const rootLine=cleanTitle(meaningful[0].text);
+
     if(!rootLine) throw new Error("The first line must contain the package title.");
+
     const root={id:id(),title:rootLine,children:[]};
     const stack=[{indent:-1,node:root}];
+    const entries=meaningful.slice(1).map(entry=>{
+      const expanded=entry.text.replace(/\t/g,"    ");
+      const spaces=(expanded.match(/^ */)||[""])[0].length;
+      return {
+        lineNo:entry.lineNo,
+        spaces,
+        title:cleanTitle(expanded.slice(spaces))
+      };
+    }).filter(entry=>entry.title.length>0);
+
+    const gcd=(a,b)=>b===0?a:gcd(b,a%b);
+    const widths=entries.map(entry=>entry.spaces).filter(n=>n>0);
+    const unit=widths.length ? widths.reduce((a,b)=>gcd(a,b)) : 4;
+
     let accepted=0;
-    for(let i=1;i<meaningful.length;i++){
-      const line=meaningful[i];
-      const spaces=(line.match(/^ */)||[""])[0].length;
-      if(line.slice(0,spaces).includes("\t")) throw new Error("Use spaces, not tabs, for indentation.");
-      let title=line.slice(spaces).trim();
-      title=title.replace(/^\d+\.\s*/,"").trim();
-      if(!title) continue;
-      if(spaces%4!==0) throw new Error("Indentation must use multiples of four spaces. Check line: "+line.trim());
-      const level=spaces/4;
-      while(stack.length>1 && stack[stack.length-1].indent>=level) stack.pop();
+
+    for(const entry of entries){
+      const {spaces,title,lineNo}=entry;
+
+      if(spaces%unit!==0){
+        throw new Error(
+          "Inconsistent indentation on line "+lineNo+": "+title
+        );
+      }
+
+      const level=spaces/unit;
+
+      while(stack.length>1 && stack[stack.length-1].indent>=level){
+        stack.pop();
+      }
+
       const parent=stack[stack.length-1];
-      if(level>parent.indent+1) throw new Error("A hierarchy level was skipped near: "+title);
-      if(level===0) {
-        // Root title is the first line; subsequent top-level numbered entries are its children.
-        root.children.push({id:id(),title,children:[]});
-        stack.length=1; stack.push({indent:0,node:root.children[root.children.length-1]});
-      } else {
-        const node={id:id(),title,children:[]};
+
+      if(level>parent.indent+1){
+        throw new Error(
+          "A hierarchy level was skipped on line "+lineNo+": "+title+
+          ". Check the indentation of this line."
+        );
+      }
+
+      const node={id:id(),title,children:[]};
+
+      if(level===0){
+        root.children.push(node);
+        stack.length=1;
+        stack.push({indent:0,node});
+      }else{
         parent.node.children.push(node);
         stack.push({indent:level,node});
       }
+
       accepted++;
     }
-    if(!accepted) throw new Error("No numbered categories were found under the root title.");
+
+    if(!accepted){
+      throw new Error("No categories were found under the root title.");
+    }
+
     return {title:rootLine,nodes:root.children};
   }
   function setStatus(s){$("status").textContent=s;}
@@ -519,18 +559,6 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
   $("importBackupBtn").addEventListener("click",()=>importFile("backup"));
   $("exportBackupBtn").addEventListener("click",exportBackup);
   $("homeBtn").addEventListener("click",()=>{$("search").value="";currentPackageId=null;currentNodeId=null;packageStarredOnly=false;renderHome();});
-  $("favoritesBtn").addEventListener("click",()=>{
-    if(favoritesActive){exitFavorites();return;}
-    favoritesReturnState={
-      packageId:currentPackageId,
-      nodeId:currentNodeId,
-      packageStarredOnly,
-      search:$("search").value,
-      searchActive:!!$("search").value.trim(),
-      detailActive:!$("detailView").classList.contains("hidden")
-    };
-    renderFavorites();
-  });
   $("search").addEventListener("input",e=>search(e.target.value));
   $("searchScope").addEventListener("change",()=>search($("search").value));
   $("searchPackage").addEventListener("change",()=>search($("search").value));
