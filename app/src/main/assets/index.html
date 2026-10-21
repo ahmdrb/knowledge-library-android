@@ -146,79 +146,68 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
     packageStarredOnly=!packageStarredOnly;renderDetail();
   };
   function parseOutline(raw){
-    const lines=raw.replace(/^\uFEFF/,"").replace(/\r\n?/g,"\n").split("\n");
-    const meaningful=lines
-      .map((text,index)=>({text,lineNo:index+1}))
-      .filter(entry=>entry.text.trim().length>0);
+    const lines = raw
+      .replace(/^\uFEFF/, "")
+      .replace(/\r\n?/g, "\n")
+      .split("\n");
 
-    if(!meaningful.length) throw new Error("The file has no outline lines.");
+    const meaningful = lines
+      .map((text, index) => ({text, lineNo: index + 1}))
+      .filter(entry => entry.text.trim().length > 0);
 
-    const cleanTitle=text=>text.trim().replace(/^\d+\.\s*/,"").trim();
-    const rootLine=cleanTitle(meaningful[0].text);
+    if (!meaningful.length) {
+      throw new Error("The file has no outline lines.");
+    }
 
-    if(!rootLine) throw new Error("The first line must contain the package title.");
+    // Accept common numbering, bullets and Markdown headings.
+    const cleanTitle = text => text.trim()
+      .replace(/^#{1,6}\s+/, "")
+      .replace(/^(?:(?:\d+(?:\.\d+)*|[A-Za-z])[.)]\s+|[-*+]\s+)/, "")
+      .trim();
 
-    const root={id:id(),title:rootLine,children:[]};
-    const stack=[{indent:-1,node:root}];
-    const entries=meaningful.slice(1).map(entry=>{
-      const expanded=entry.text.replace(/\t/g,"    ");
-      const spaces=(expanded.match(/^ */)||[""])[0].length;
-      return {
-        lineNo:entry.lineNo,
-        spaces,
-        title:cleanTitle(expanded.slice(spaces))
-      };
-    }).filter(entry=>entry.title.length>0);
+    const rootLine = cleanTitle(meaningful[0].text);
 
-    const gcd=(a,b)=>b===0?a:gcd(b,a%b);
-    const widths=entries.map(entry=>entry.spaces).filter(n=>n>0);
-    const unit=widths.length ? widths.reduce((a,b)=>gcd(a,b)) : 4;
+    if (!rootLine) {
+      throw new Error("The first line must contain the package title.");
+    }
 
-    let accepted=0;
+    const root = {id: id(), title: rootLine, children: []};
 
-    for(const entry of entries){
-      const {spaces,title,lineNo}=entry;
+    // Indentation is relative: any increase means a child,
+    // the same indentation means a sibling, and a decrease
+    // returns to the appropriate ancestor.
+    const stack = [{indent: -1, node: root}];
+    let accepted = 0;
 
-      if(spaces%unit!==0){
-        throw new Error(
-          "Inconsistent indentation on line "+lineNo+": "+title
-        );
-      }
+    for (const entry of meaningful.slice(1)) {
+      const expanded = entry.text.replace(/\t/g, "    ");
+      const match = expanded.match(/^ */);
+      const indent = match ? match[0].length : 0;
+      const title = cleanTitle(expanded.slice(indent));
 
-      const level=spaces/unit;
+      if (!title) continue;
 
-      while(stack.length>1 && stack[stack.length-1].indent>=level){
+      // Pop siblings and ancestors until the correct parent remains.
+      while (
+        stack.length > 1 &&
+        indent <= stack[stack.length - 1].indent
+      ) {
         stack.pop();
       }
 
-      const parent=stack[stack.length-1];
+      const parent = stack[stack.length - 1].node;
+      const node = {id: id(), title, children: []};
 
-      if(level>parent.indent+1){
-        throw new Error(
-          "A hierarchy level was skipped on line "+lineNo+": "+title+
-          ". Check the indentation of this line."
-        );
-      }
-
-      const node={id:id(),title,children:[]};
-
-      if(level===0){
-        root.children.push(node);
-        stack.length=1;
-        stack.push({indent:0,node});
-      }else{
-        parent.node.children.push(node);
-        stack.push({indent:level,node});
-      }
-
+      parent.children.push(node);
+      stack.push({indent, node});
       accepted++;
     }
 
-    if(!accepted){
+    if (!accepted) {
       throw new Error("No categories were found under the root title.");
     }
 
-    return {title:rootLine,nodes:root.children};
+    return {title: rootLine, nodes: root.children};
   }
   function setStatus(s){$("status").textContent=s;}
   let importMode="outline";
