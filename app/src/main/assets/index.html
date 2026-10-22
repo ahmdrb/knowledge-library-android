@@ -314,7 +314,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
     <div class="card"><div class="pkgtitle">${escapeHtml(found?found.node.title:p.title)}</div><div class="meta">${found?countNodes({nodes:[found.node]})+' concepts below':' '+countNodes(p)+' concepts in this package'} · ★ ${starredCount(p)} starred</div>
     <div class="toolbar">${found?starButton(found.node):''}<button class="secondary" onclick="togglePackageStarred()">${packageStarredOnly?'Show all concepts':'★ Starred in package'}</button><button class="secondary" onclick="goParent()">↑ Parent</button><button class="secondary" onclick="expandAll()">Expand all</button><button class="secondary" onclick="collapseAll()">Collapse all</button><button class="secondary" onclick="editOutline()">✎ Edit outline</button><button class="secondary" onclick="startNodeSelection()">Select</button><button id="packageAddItemButton" onclick="addItem()">＋ Add item</button></div></div>
     <div id="outlineEditorPanel" class="card editor-panel hidden"><div class="pkgtitle">Edit outline text</div><p class="editor-help">Edit the title and text below. Use four spaces for each nested level. Saving updates this package on your device.</p><textarea id="outlineEditor" class="outline-editor" spellcheck="false" aria-label="Edit outline text"></textarea><div class="toolbar"><button onclick="saveOutlineEdit()">Save changes</button><button class="secondary" onclick="cancelOutlineEdit()">Cancel</button></div></div>
-    <div class="section-title">${found?'Subcategories and concepts':'Main categories'}</div>${nodeSelectionMode ? `<div class="bulkbar"><button class="secondary small" onclick="selectAllAtCurrentLevel()">Select all in package</button><span>${selectedNodes.size} selected</span><button class="danger small" onclick="deleteSelectedNodes()">Delete selected</button><button class="secondary small" onclick="moveSelectedNodes()">Move selected</button><button class="secondary small" onclick="transferSelectedNodes()">Transfer to package</button><button class="secondary small" onclick="clearNodeSelection()">Clear</button><button class="secondary small" onclick="cancelNodeSelection()">Cancel</button></div>` : `<div class="toolbar"><button class="secondary small" onclick="startNodeSelection()">Select concepts</button></div>`}<div id="treeHost"></div>`;
+    <div class="section-title">${found?'Subcategories and concepts':'Main categories'}</div>${nodeSelectionMode ? `<div class="bulkbar"><button class="secondary small" onclick="selectAllAtCurrentLevel()">Select all</button><span>${selectedNodes.size} selected</span><button class="danger small" onclick="deleteSelectedNodes()">Delete selected</button><button class="secondary small" onclick="moveSelectedNodes()">Move selected</button><button class="secondary small" onclick="transferSelectedNodes()">Transfer to package</button><button class="secondary small" onclick="clearNodeSelection()">Clear</button><button class="secondary small" onclick="cancelNodeSelection()">Cancel</button></div>` : `<div class="toolbar"><button class="secondary small" onclick="startNodeSelection()">Select concepts</button></div>`}<div id="treeHost"></div>`;
     const detailToolbar = $("detailView").querySelector(".card .toolbar");
     if (detailToolbar) {
       const editButton = detailToolbar.querySelector('button[onclick="editOutline()"]');
@@ -401,10 +401,14 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
   };
   window.selectAllAtCurrentLevel=function(){
     const p=getPackage();if(!p)return;
-    selectedNodes=new Set(allNodes(p.nodes).map(n=>n.id));
+    const current=currentNodeId?findNode(p.nodes,currentNodeId):null;
+    const visible=currentNodeId
+      ? (current?current.node.children||[]:[])
+      : p.nodes;
+    selectedNodes=new Set(visible.map(n=>n.id));
     nodeSelectionMode=true;
     renderDetail();
-    setStatus(selectedNodes.size+" concept(s) selected across the package.");
+    setStatus(selectedNodes.size+" concept(s) selected at this level.");
   };
   window.cancelNodeSelection=function(){
     selectedNodes.clear();nodeSelectionMode=false;renderDetail();
@@ -445,27 +449,107 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
     setStatus(count+" selected concept(s) and their descendants deleted.");
   };
 
-  window.moveSelectedNodes=function(){
+  function chooseFromList(title,items,includeRoot){
+    return new Promise(resolve=>{
+      const overlay=document.createElement("div");
+      overlay.style.cssText=
+        "position:fixed;inset:0;z-index:10000;display:flex;"+
+        "align-items:center;justify-content:center;padding:16px;"+
+        "background:rgba(0,0,0,.62)";
+      const panel=document.createElement("div");
+      panel.style.cssText=
+        "width:100%;max-width:520px;max-height:85vh;overflow:auto;"+
+        "padding:18px;border-radius:16px;background:var(--panel);"+
+        "color:var(--text);box-shadow:0 8px 32px #0005";
+      const heading=document.createElement("div");
+      heading.textContent=title;
+      heading.style.cssText="font-size:18px;font-weight:750;margin-bottom:12px";
+      const help=document.createElement("p");
+      help.className="notice";
+      help.textContent="Tap the destination you want.";
+      const select=document.createElement("select");
+      select.style.cssText=
+        "display:block;width:100%;padding:13px;margin:8px 0 16px;"+
+        "border:1px solid var(--line);border-radius:10px;"+
+        "background:var(--panel);color:var(--text);font:inherit";
+      if(includeRoot){
+        const option=document.createElement("option");
+        option.value="root";
+        option.textContent="0. Package root";
+        select.appendChild(option);
+      }
+      items.forEach((item,index)=>{
+        const option=document.createElement("option");
+        option.value=String(index);
+        option.textContent=(index+1)+". "+item.title;
+        select.appendChild(option);
+      });
+      const actions=document.createElement("div");
+      actions.style.cssText="display:flex;gap:8px;justify-content:flex-end";
+      const cancel=document.createElement("button");
+      cancel.type="button";
+      cancel.className="secondary";
+      cancel.textContent="Cancel";
+      const choose=document.createElement("button");
+      choose.type="button";
+      choose.textContent="Choose";
+      let finished=false;
+      function finish(value){
+        if(finished)return;
+        finished=true;
+        document.removeEventListener("keydown",onKey);
+        overlay.remove();
+        resolve(value);
+      }
+      function onKey(event){
+        if(event.key==="Escape")finish(undefined);
+      }
+      cancel.onclick=()=>finish(undefined);
+      choose.onclick=()=>{
+        finish(select.value==="root"
+          ? null
+          : items[Number(select.value)]);
+      };
+      overlay.addEventListener("click",event=>{
+        if(event.target===overlay)finish(undefined);
+      });
+      actions.append(cancel,choose);
+      panel.append(heading,help,select,actions);
+      overlay.appendChild(panel);
+      document.body.appendChild(overlay);
+      document.addEventListener("keydown",onKey);
+      select.focus();
+    });
+  }
+
+  window.moveSelectedNodes=async function(){
     const p=getPackage();if(!p)return;
     const moving=selectedRootNodes(p.nodes);
     if(!moving.length){setStatus("Select at least one concept first.");return;}
 
     const forbidden=new Set();
-    for(const n of moving)for(const item of allNodes([n]))forbidden.add(item.id);
-    const candidates=allNodes(p.nodes).filter(n=>!forbidden.has(n.id));
-    const choices=["0. Package root",...candidates.map((n,i)=>(i+1)+". "+n.title)];
-    const answer=prompt("Move "+moving.length+" selected item(s) into which destination?\n\n"+choices.join("\n")+"\n\nEnter the number. Moving a category moves all its descendants.");
-    if(answer===null)return;
-    const choice=answer.trim();
-    if(!/^\d+$/.test(choice)){alert("Enter a valid destination number.");return;}
-    const index=Number(choice);
-    if(index<0||index>=choices.length){alert("That destination number is not valid.");return;}
+    for(const n of moving)
+      for(const item of allNodes([n]))forbidden.add(item.id);
 
-    const destination=index===0?null:candidates[index-1];
-    if(!confirm("Move "+moving.length+" selected item(s)"+(destination?' into "'+destination.title+'"':' to the package root')+"?"))return;
+    const candidates=allNodes(p.nodes).filter(n=>!forbidden.has(n.id));
+    const destination=await chooseFromList(
+      "Move selected items into which destination?",
+      candidates,true
+    );
+    if(destination===undefined)return;
+
+    if(!confirm("Move "+moving.length+" selected item(s)"+
+      (destination?' into "'+destination.title+'"':
+      " to the package root")+
+      "? Each selected category keeps its descendants."))return;
 
     const movingIds=new Set(moving.map(n=>n.id));
-    function remove(list){return list.filter(n=>!movingIds.has(n.id)).map(n=>{n.children=remove(n.children||[]);return n;});}
+    function remove(list){
+      return list.filter(n=>!movingIds.has(n.id)).map(n=>{
+        n.children=remove(n.children||[]);
+        return n;
+      });
+    }
     p.nodes=remove(p.nodes);
     if(destination){
       if(!Array.isArray(destination.children))destination.children=[];
@@ -481,46 +565,57 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
     setStatus(moving.length+" item(s) moved with their descendants.");
   };
 
-  window.transferSelectedNodes=function(){
+  window.transferSelectedNodes=async function(){
     const sourcePackage=getPackage();if(!sourcePackage)return;
     const moving=selectedRootNodes(sourcePackage.nodes);
     if(!moving.length){setStatus("Select at least one concept first.");return;}
 
     const destinations=packages.filter(p=>p.id!==sourcePackage.id);
-    if(!destinations.length){alert("Import or create another package before transferring items.");return;}
-    const choices=destinations.map((p,i)=>(i+1)+". "+p.title);
-    const answer=prompt("Transfer "+moving.length+" selected item(s) to which package?\n\n"+choices.join("\n")+"\n\nEnter the package number.");
-    if(answer===null)return;
-    const choice=answer.trim();
-    if(!/^\d+$/.test(choice)){alert("Enter a valid package number.");return;}
-    const index=Number(choice)-1;
-    if(index<0||index>=destinations.length){alert("That package number is not valid.");return;}
-    const destination=destinations[index];
+    if(!destinations.length){
+      alert("Import or create another package before transferring items.");
+      return;
+    }
+
+    const destination=await chooseFromList(
+      "Transfer selected items to which package?",
+      destinations,false
+    );
+    if(destination===undefined)return;
+
     const targets=allNodes(destination.nodes);
-    const targetChoices=["0. Package root",...targets.map((n,i)=>(i+1)+". "+n.title)];
-    const targetAnswer=prompt("Transfer into which destination concept?\n\n"+targetChoices.join("\n")+"\n\nEnter 0 for package root.");
-    if(targetAnswer===null)return;
-    if(!/^\d+$/.test(targetAnswer.trim())){alert("Enter a valid destination number.");return;}
-    const targetIndex=Number(targetAnswer.trim());
-    if(targetIndex<0||targetIndex>=targetChoices.length){alert("That destination number is not valid.");return;}
-    const destinationTarget=targetIndex===0?null:targets[targetIndex-1];
-    if(!confirm("Transfer "+moving.length+" item(s) and all their descendants from \""+sourcePackage.title+"\" to \""+destination.title+"\"?"))return;
+    const destinationTarget=await chooseFromList(
+      "Choose the destination concept in "+destination.title,
+      targets,true
+    );
+    if(destinationTarget===undefined)return;
+
+    if(!confirm("Transfer "+moving.length+" item(s) and all their descendants "+
+      'from "'+sourcePackage.title+'" to "'+destination.title+'"?'))return;
 
     const movingIds=new Set(moving.map(n=>n.id));
-    function remove(list){return list.filter(n=>!movingIds.has(n.id)).map(n=>{n.children=remove(n.children||[]);return n;});}
+    function remove(list){
+      return list.filter(n=>!movingIds.has(n.id)).map(n=>{
+        n.children=remove(n.children||[]);
+        return n;
+      });
+    }
     sourcePackage.nodes=remove(sourcePackage.nodes);
     if(destinationTarget){
-      if(!Array.isArray(destinationTarget.children))destinationTarget.children=[];
+      if(!Array.isArray(destinationTarget.children))
+        destinationTarget.children=[];
       destinationTarget.children.push(...moving);
       expanded.add(destinationTarget.id);
-    }else destination.nodes.push(...moving);
+    }else{
+      destination.nodes.push(...moving);
+    }
     const now=new Date().toISOString();
     sourcePackage.editedAt=now;
     destination.editedAt=now;
     selectedNodes.clear();
     currentNodeId=null;
     save();renderDetail();
-    setStatus(moving.length+" item(s) transferred to \""+destination.title+"\" with their descendants.");
+    setStatus(moving.length+" item(s) transferred to "+
+      '"'+destination.title+'" with their descendants.');
   };
 
   window.selectNode=function(nid){openNode(nid);};
