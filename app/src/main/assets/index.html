@@ -312,9 +312,9 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
     const path=found?found.path.map(n=>n.title):[p.title];
     $("detailView").innerHTML=`<div class="crumb"><a href="#" onclick="openPackage('${p.id}');return false">⌂ ${escapeHtml(p.title)}</a>${found?' / '+path.slice(1).map(escapeHtml).join(' / '):''}</div>
     <div class="card"><div class="pkgtitle">${escapeHtml(found?found.node.title:p.title)}</div><div class="meta">${found?countNodes({nodes:[found.node]})+' concepts below':' '+countNodes(p)+' concepts in this package'} · ★ ${starredCount(p)} starred</div>
-    <div class="toolbar">${found?starButton(found.node):''}<button class="secondary" onclick="togglePackageStarred()">${packageStarredOnly?'Show all concepts':'★ Starred in package'}</button><button class="secondary" onclick="goParent()">↑ Parent</button><button class="secondary" onclick="expandAll()">Expand all</button><button class="secondary" onclick="collapseAll()">Collapse all</button><button class="secondary" onclick="editOutline()">✎ Edit outline</button><button class="secondary" onclick="selectAllAtCurrentLevel()">Select all</button><button id="packageAddItemButton" onclick="addItem()">＋ Add item</button></div></div>
+    <div class="toolbar">${found?starButton(found.node):''}<button class="secondary" onclick="togglePackageStarred()">${packageStarredOnly?'Show all concepts':'★ Starred in package'}</button><button class="secondary" onclick="goParent()">↑ Parent</button><button class="secondary" onclick="expandAll()">Expand all</button><button class="secondary" onclick="collapseAll()">Collapse all</button><button class="secondary" onclick="editOutline()">✎ Edit outline</button><button class="secondary" onclick="startNodeSelection()">Select</button><button id="packageAddItemButton" onclick="addItem()">＋ Add item</button></div></div>
     <div id="outlineEditorPanel" class="card editor-panel hidden"><div class="pkgtitle">Edit outline text</div><p class="editor-help">Edit the title and text below. Use four spaces for each nested level. Saving updates this package on your device.</p><textarea id="outlineEditor" class="outline-editor" spellcheck="false" aria-label="Edit outline text"></textarea><div class="toolbar"><button onclick="saveOutlineEdit()">Save changes</button><button class="secondary" onclick="cancelOutlineEdit()">Cancel</button></div></div>
-    <div class="section-title">${found?'Subcategories and concepts':'Main categories'}</div>${nodeSelectionMode ? `<div class="bulkbar"><label><input type="checkbox" ${shown.length && shown.every(n=>selectedNodes.has(n.id))?"checked":""} onchange="toggleAllNodes(this.checked)"> Select all at this level</label><span>${shown.filter(n=>selectedNodes.has(n.id)).length} selected</span><button class="danger small" onclick="deleteSelectedNodes()">Delete selected</button><button class="secondary small" onclick="moveSelectedNodes()">Move selected</button><button class="secondary small" onclick="transferSelectedNodes()">Transfer to package</button><button class="secondary small" onclick="clearNodeSelection()">Clear</button><button class="secondary small" onclick="cancelNodeSelection()">Cancel</button></div>` : `<div class="toolbar"><button class="secondary small" onclick="startNodeSelection()">Select concepts</button></div>`}<div id="treeHost"></div>`;
+    <div class="section-title">${found?'Subcategories and concepts':'Main categories'}</div>${nodeSelectionMode ? `<div class="bulkbar"><button class="secondary small" onclick="selectAllAtCurrentLevel()">Select all in package</button><span>${selectedNodes.size} selected</span><button class="danger small" onclick="deleteSelectedNodes()">Delete selected</button><button class="secondary small" onclick="moveSelectedNodes()">Move selected</button><button class="secondary small" onclick="transferSelectedNodes()">Transfer to package</button><button class="secondary small" onclick="clearNodeSelection()">Clear</button><button class="secondary small" onclick="cancelNodeSelection()">Cancel</button></div>` : `<div class="toolbar"><button class="secondary small" onclick="startNodeSelection()">Select concepts</button></div>`}<div id="treeHost"></div>`;
     const detailToolbar = $("detailView").querySelector(".card .toolbar");
     if (detailToolbar) {
       const editButton = detailToolbar.querySelector('button[onclick="editOutline()"]');
@@ -369,43 +369,86 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
     if(!nodes.length){host.innerHTML='<div class="empty">No subcategories at this level.</div>';return;}
     host.innerHTML=nodes.map(n=>{
       const has=n.children&&n.children.length, isOpen=expanded.has(n.id);
-      return `<div class="treeitem">${depth===0&&nodeSelectionMode?`<label class="pickitem"><input type="checkbox" ${selectedNodes.has(n.id)?"checked":""} onchange="toggleNodeSelection(\'${n.id}\',this.checked)"> Select</label>`:""}<button class="treebtn" type="button"><span class="nodetitle">${escapeHtml(n.title)}</span><span class="meta">${has?n.children.length+' children':''}</span></button>
-      <div class="nodeactions">${starButton(n)}<button class="secondary small" onclick="openNode('${n.id}')">Open</button><button class="secondary small" onclick="editNode('${n.id}')">Edit</button><button class="secondary small" onclick="addChild('${n.id}')">＋ Add child</button><button class="secondary small" onclick="selectSingleNode('${n.id}')">Select</button><button class="danger small" onclick="deleteNode('${n.id}')">Delete</button>${has?`<button class="secondary small" onclick="toggleNode('${n.id}')">${isOpen?'Collapse':'Expand'}</button>`:''}</div>
+      return `<div class="treeitem">${nodeSelectionMode?`<label class="pickitem"><input type="checkbox" ${selectedNodes.has(n.id)?"checked":""} onchange="toggleNodeSelection(\'${n.id}\',this.checked)"> Select</label>`:""}<button class="treebtn" type="button"><span class="nodetitle">${escapeHtml(n.title)}</span><span class="meta">${has?n.children.length+' children':''}</span></button>
+      <div class="nodeactions">${starButton(n)}<button class="secondary small" onclick="openNode('${n.id}')">Open</button><button class="secondary small" onclick="editNode('${n.id}')">Edit</button><button class="secondary small" onclick="addChild('${n.id}')">＋ Add child</button><button class="danger small" onclick="deleteNode('${n.id}')">Delete</button>${has?`<button class="secondary small" onclick="toggleNode('${n.id}')">${isOpen?'Collapse':'Expand'}</button>`:''}</div>
       ${has&&isOpen?`<div style="padding-left:8px" id="children-${n.id}"></div>`:''}</div>`;
     }).join("");
     for(const n of nodes) if(n.children&&n.children.length&&expanded.has(n.id)){const el=$("children-"+n.id);if(el)renderTree(n.children,el.id,depth+1);}
   }
-  window.startNodeSelection=function(){selectedNodes.clear();nodeSelectionMode=true;renderDetail();};
+  function selectedRootNodes(nodes,selection=selectedNodes){
+    const result=[];
+    function visit(list,ancestorSelected=false){
+      for(const n of list){
+        const chosen=selection.has(n.id);
+        if(chosen&&!ancestorSelected)result.push(n);
+        visit(n.children||[],ancestorSelected||chosen);
+      }
+    }
+    visit(nodes);
+    return result;
+  }
+  window.startNodeSelection=function(){
+    selectedNodes.clear();
+    nodeSelectionMode=true;
+    renderDetail();
+  };
   window.selectSingleNode=function(nid){
-    const p=getPackage();if(!p)return;
-    const f=findNode(p.nodes,nid);if(!f)return;
-    currentNodeId=f.path.length>1?f.path[f.path.length-2].id:null;
+    if(!getPackage()||!findNode(getPackage().nodes,nid))return;
     selectedNodes=new Set([nid]);
     nodeSelectionMode=true;
     renderDetail();
-    setStatus("1 concept selected. Choose Move selected or Delete selected.");
+    setStatus("1 concept selected.");
   };
   window.selectAllAtCurrentLevel=function(){
     const p=getPackage();if(!p)return;
-    const f=currentNodeId?findNode(p.nodes,currentNodeId):null;
-    const shown=f?f.node.children:p.nodes;
-    selectedNodes=new Set(shown.map(n=>n.id));
+    selectedNodes=new Set(allNodes(p.nodes).map(n=>n.id));
     nodeSelectionMode=true;
     renderDetail();
-    setStatus(selectedNodes.size+" concept(s) selected at this level.");
+    setStatus(selectedNodes.size+" concept(s) selected across the package.");
   };
-  window.cancelNodeSelection=function(){selectedNodes.clear();nodeSelectionMode=false;renderDetail();setStatus("Concept selection cancelled.");};
-  window.toggleNodeSelection=function(nid,checked){if(checked)selectedNodes.add(nid);else selectedNodes.delete(nid);renderDetail();};
-  window.toggleAllNodes=function(checked){const p=getPackage();if(!p)return;const f=currentNodeId?findNode(p.nodes,currentNodeId):null;const shown=f?f.node.children:p.nodes;selectedNodes=checked?new Set(shown.map(n=>n.id)):new Set();renderDetail();};
-  window.clearNodeSelection=function(){selectedNodes.clear();renderDetail();setStatus("Concept selection cleared.");};
-  window.deleteSelectedNodes=function(){const p=getPackage();if(!p)return;const f=currentNodeId?findNode(p.nodes,currentNodeId):null;const list=f?f.node.children:p.nodes;const ids=new Set(list.filter(n=>selectedNodes.has(n.id)).map(n=>n.id));if(!ids.size){setStatus("No concepts selected at this level.");return;}if(!confirm("Delete "+ids.size+" selected concept(s) and all their descendants? This cannot be undone."))return;const removed=list.filter(n=>ids.has(n.id));for(const n of removed)for(const child of allNodes([n]))expanded.delete(child.id);if(f)f.node.children=list.filter(n=>!ids.has(n.id));else p.nodes=list.filter(n=>!ids.has(n.id));selectedNodes.clear();p.editedAt=new Date().toISOString();save();renderDetail();setStatus(ids.size+" concept(s) and their descendants deleted.");};
+  window.cancelNodeSelection=function(){
+    selectedNodes.clear();nodeSelectionMode=false;renderDetail();
+    setStatus("Concept selection cancelled.");
+  };
+  window.toggleNodeSelection=function(nid,checked){
+    if(checked)selectedNodes.add(nid);else selectedNodes.delete(nid);
+    renderDetail();
+  };
+  window.toggleAllNodes=function(checked){
+    const p=getPackage();if(!p)return;
+    selectedNodes=checked?new Set(allNodes(p.nodes).map(n=>n.id)):new Set();
+    renderDetail();
+  };
+  window.clearNodeSelection=function(){
+    selectedNodes.clear();renderDetail();setStatus("Concept selection cleared.");
+  };
+
+  window.deleteSelectedNodes=function(){
+    const p=getPackage();if(!p)return;
+    const roots=selectedRootNodes(p.nodes);
+    if(!roots.length){setStatus("Select at least one concept first.");return;}
+    const count=selectedNodes.size;
+    if(!confirm("Delete "+count+" selected concept(s) and all descendants of selected parent concepts? This cannot be undone."))return;
+    const ids=new Set();
+    for(const n of roots)for(const item of allNodes([n]))ids.add(item.id);
+    function remove(list){
+      return list.filter(n=>!ids.has(n.id)).map(n=>{
+        n.children=remove(n.children||[]);
+        return n;
+      });
+    }
+    p.nodes=remove(p.nodes);
+    for(const id of ids)expanded.delete(id);
+    selectedNodes.clear();
+    p.editedAt=new Date().toISOString();
+    save();renderDetail();
+    setStatus(count+" selected concept(s) and their descendants deleted.");
+  };
 
   window.moveSelectedNodes=function(){
     const p=getPackage();if(!p)return;
-    const current=currentNodeId?findNode(p.nodes,currentNodeId):null;
-    const source=current?current.node.children:p.nodes;
-    const moving=source.filter(n=>selectedNodes.has(n.id));
-    if(!moving.length){setStatus("Select items at this level first.");return;}
+    const moving=selectedRootNodes(p.nodes);
+    if(!moving.length){setStatus("Select at least one concept first.");return;}
 
     const forbidden=new Set();
     for(const n of moving)for(const item of allNodes([n]))forbidden.add(item.id);
@@ -416,17 +459,14 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
     const choice=answer.trim();
     if(!/^\d+$/.test(choice)){alert("Enter a valid destination number.");return;}
     const index=Number(choice);
-    if(index<0||index>candidates.length){alert("That destination number is not valid.");return;}
+    if(index<0||index>=choices.length){alert("That destination number is not valid.");return;}
 
     const destination=index===0?null:candidates[index-1];
-    const target=destination?destination.children:p.nodes;
-    if(target===source){setStatus("Those items are already in that location.");return;}
     if(!confirm("Move "+moving.length+" selected item(s)"+(destination?' into "'+destination.title+'"':' to the package root')+"?"))return;
 
     const movingIds=new Set(moving.map(n=>n.id));
-    const remaining=source.filter(n=>!movingIds.has(n.id));
-    if(current)current.node.children=remaining;
-    else p.nodes=remaining;
+    function remove(list){return list.filter(n=>!movingIds.has(n.id)).map(n=>{n.children=remove(n.children||[]);return n;});}
+    p.nodes=remove(p.nodes);
     if(destination){
       if(!Array.isArray(destination.children))destination.children=[];
       destination.children.push(...moving);
@@ -435,6 +475,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
       p.nodes.push(...moving);
     }
     selectedNodes.clear();
+    currentNodeId=null;
     p.editedAt=new Date().toISOString();
     save();renderDetail();
     setStatus(moving.length+" item(s) moved with their descendants.");
@@ -442,10 +483,8 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
 
   window.transferSelectedNodes=function(){
     const sourcePackage=getPackage();if(!sourcePackage)return;
-    const current=currentNodeId?findNode(sourcePackage.nodes,currentNodeId):null;
-    const source=current?current.node.children:sourcePackage.nodes;
-    const moving=source.filter(n=>selectedNodes.has(n.id));
-    if(!moving.length){setStatus("Select items at this level first.");return;}
+    const moving=selectedRootNodes(sourcePackage.nodes);
+    if(!moving.length){setStatus("Select at least one concept first.");return;}
 
     const destinations=packages.filter(p=>p.id!==sourcePackage.id);
     if(!destinations.length){alert("Import or create another package before transferring items.");return;}
@@ -457,16 +496,29 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
     const index=Number(choice)-1;
     if(index<0||index>=destinations.length){alert("That package number is not valid.");return;}
     const destination=destinations[index];
+    const targets=allNodes(destination.nodes);
+    const targetChoices=["0. Package root",...targets.map((n,i)=>(i+1)+". "+n.title)];
+    const targetAnswer=prompt("Transfer into which destination concept?\n\n"+targetChoices.join("\n")+"\n\nEnter 0 for package root.");
+    if(targetAnswer===null)return;
+    if(!/^\d+$/.test(targetAnswer.trim())){alert("Enter a valid destination number.");return;}
+    const targetIndex=Number(targetAnswer.trim());
+    if(targetIndex<0||targetIndex>=targetChoices.length){alert("That destination number is not valid.");return;}
+    const destinationTarget=targetIndex===0?null:targets[targetIndex-1];
     if(!confirm("Transfer "+moving.length+" item(s) and all their descendants from \""+sourcePackage.title+"\" to \""+destination.title+"\"?"))return;
 
     const movingIds=new Set(moving.map(n=>n.id));
-    if(current)current.node.children=source.filter(n=>!movingIds.has(n.id));
-    else sourcePackage.nodes=source.filter(n=>!movingIds.has(n.id));
-    destination.nodes.push(...moving);
+    function remove(list){return list.filter(n=>!movingIds.has(n.id)).map(n=>{n.children=remove(n.children||[]);return n;});}
+    sourcePackage.nodes=remove(sourcePackage.nodes);
+    if(destinationTarget){
+      if(!Array.isArray(destinationTarget.children))destinationTarget.children=[];
+      destinationTarget.children.push(...moving);
+      expanded.add(destinationTarget.id);
+    }else destination.nodes.push(...moving);
     const now=new Date().toISOString();
     sourcePackage.editedAt=now;
     destination.editedAt=now;
     selectedNodes.clear();
+    currentNodeId=null;
     save();renderDetail();
     setStatus(moving.length+" item(s) transferred to \""+destination.title+"\" with their descendants.");
   };
