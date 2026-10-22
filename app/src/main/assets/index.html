@@ -312,7 +312,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
     const path=found?found.path.map(n=>n.title):[p.title];
     $("detailView").innerHTML=`<div class="crumb"><a href="#" onclick="openPackage('${p.id}');return false">⌂ ${escapeHtml(p.title)}</a>${found?' / '+path.slice(1).map(escapeHtml).join(' / '):''}</div>
     <div class="card"><div class="pkgtitle">${escapeHtml(found?found.node.title:p.title)}</div><div class="meta">${found?countNodes({nodes:[found.node]})+' concepts below':' '+countNodes(p)+' concepts in this package'} · ★ ${starredCount(p)} starred</div>
-    <div class="toolbar">${found?starButton(found.node):''}<button class="secondary" onclick="togglePackageStarred()">${packageStarredOnly?'Show all concepts':'★ Starred in package'}</button><button class="secondary" onclick="goParent()">↑ Parent</button><button class="secondary" onclick="expandAll()">Expand all</button><button class="secondary" onclick="collapseAll()">Collapse all</button><button class="secondary" onclick="editOutline()">✎ Edit outline</button><button id="packageAddItemButton" onclick="addItem()">＋ Add item</button></div></div>
+    <div class="toolbar">${found?starButton(found.node):''}<button class="secondary" onclick="togglePackageStarred()">${packageStarredOnly?'Show all concepts':'★ Starred in package'}</button><button class="secondary" onclick="goParent()">↑ Parent</button><button class="secondary" onclick="expandAll()">Expand all</button><button class="secondary" onclick="collapseAll()">Collapse all</button><button class="secondary" onclick="editOutline()">✎ Edit outline</button><button class="secondary" onclick="selectAllAtCurrentLevel()">Select all</button><button id="packageAddItemButton" onclick="addItem()">＋ Add item</button></div></div>
     <div id="outlineEditorPanel" class="card editor-panel hidden"><div class="pkgtitle">Edit outline text</div><p class="editor-help">Edit the title and text below. Use four spaces for each nested level. Saving updates this package on your device.</p><textarea id="outlineEditor" class="outline-editor" spellcheck="false" aria-label="Edit outline text"></textarea><div class="toolbar"><button onclick="saveOutlineEdit()">Save changes</button><button class="secondary" onclick="cancelOutlineEdit()">Cancel</button></div></div>
     <div class="section-title">${found?'Subcategories and concepts':'Main categories'}</div>${nodeSelectionMode ? `<div class="bulkbar"><label><input type="checkbox" ${shown.length && shown.every(n=>selectedNodes.has(n.id))?"checked":""} onchange="toggleAllNodes(this.checked)"> Select all at this level</label><span>${shown.filter(n=>selectedNodes.has(n.id)).length} selected</span><button class="danger small" onclick="deleteSelectedNodes()">Delete selected</button><button class="secondary small" onclick="moveSelectedNodes()">Move selected</button><button class="secondary small" onclick="transferSelectedNodes()">Transfer to package</button><button class="secondary small" onclick="clearNodeSelection()">Clear</button><button class="secondary small" onclick="cancelNodeSelection()">Cancel</button></div>` : `<div class="toolbar"><button class="secondary small" onclick="startNodeSelection()">Select concepts</button></div>`}<div id="treeHost"></div>`;
     const detailToolbar = $("detailView").querySelector(".card .toolbar");
@@ -370,12 +370,30 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
     host.innerHTML=nodes.map(n=>{
       const has=n.children&&n.children.length, isOpen=expanded.has(n.id);
       return `<div class="treeitem">${depth===0&&nodeSelectionMode?`<label class="pickitem"><input type="checkbox" ${selectedNodes.has(n.id)?"checked":""} onchange="toggleNodeSelection(\'${n.id}\',this.checked)"> Select</label>`:""}<button class="treebtn" type="button"><span class="nodetitle">${escapeHtml(n.title)}</span><span class="meta">${has?n.children.length+' children':''}</span></button>
-      <div class="nodeactions">${starButton(n)}<button class="secondary small" onclick="openNode('${n.id}')">Open</button><button class="secondary small" onclick="editNode('${n.id}')">Edit</button><button class="secondary small" onclick="addChild('${n.id}')">＋ Add child</button><button class="danger small" onclick="deleteNode('${n.id}')">Delete</button>${has?`<button class="secondary small" onclick="toggleNode('${n.id}')">${isOpen?'Collapse':'Expand'}</button>`:''}</div>
+      <div class="nodeactions">${starButton(n)}<button class="secondary small" onclick="openNode('${n.id}')">Open</button><button class="secondary small" onclick="editNode('${n.id}')">Edit</button><button class="secondary small" onclick="addChild('${n.id}')">＋ Add child</button><button class="secondary small" onclick="selectSingleNode('${n.id}')">Select</button><button class="danger small" onclick="deleteNode('${n.id}')">Delete</button>${has?`<button class="secondary small" onclick="toggleNode('${n.id}')">${isOpen?'Collapse':'Expand'}</button>`:''}</div>
       ${has&&isOpen?`<div style="padding-left:8px" id="children-${n.id}"></div>`:''}</div>`;
     }).join("");
     for(const n of nodes) if(n.children&&n.children.length&&expanded.has(n.id)){const el=$("children-"+n.id);if(el)renderTree(n.children,el.id,depth+1);}
   }
   window.startNodeSelection=function(){selectedNodes.clear();nodeSelectionMode=true;renderDetail();};
+  window.selectSingleNode=function(nid){
+    const p=getPackage();if(!p)return;
+    const f=findNode(p.nodes,nid);if(!f)return;
+    currentNodeId=f.path.length>1?f.path[f.path.length-2].id:null;
+    selectedNodes=new Set([nid]);
+    nodeSelectionMode=true;
+    renderDetail();
+    setStatus("1 concept selected. Choose Move selected or Delete selected.");
+  };
+  window.selectAllAtCurrentLevel=function(){
+    const p=getPackage();if(!p)return;
+    const f=currentNodeId?findNode(p.nodes,currentNodeId):null;
+    const shown=f?f.node.children:p.nodes;
+    selectedNodes=new Set(shown.map(n=>n.id));
+    nodeSelectionMode=true;
+    renderDetail();
+    setStatus(selectedNodes.size+" concept(s) selected at this level.");
+  };
   window.cancelNodeSelection=function(){selectedNodes.clear();nodeSelectionMode=false;renderDetail();setStatus("Concept selection cancelled.");};
   window.toggleNodeSelection=function(nid,checked){if(checked)selectedNodes.add(nid);else selectedNodes.delete(nid);renderDetail();};
   window.toggleAllNodes=function(checked){const p=getPackage();if(!p)return;const f=currentNodeId?findNode(p.nodes,currentNodeId):null;const shown=f?f.node.children:p.nodes;selectedNodes=checked?new Set(shown.map(n=>n.id)):new Set();renderDetail();};
