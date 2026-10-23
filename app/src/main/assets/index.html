@@ -527,10 +527,13 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
           addChoice("Package root (top level)",null);
         }
 
-        const query=input.value.trim().toLocaleLowerCase();
-        const matches=items.filter(item=>
-          String(item.title||"").toLocaleLowerCase().includes(query)
-        );
+        const query=input.value.trim();
+        const matches=items
+          .map((item,index)=>({item,index,score:rankTitle(item.title,query)}))
+          .filter(entry=>entry.score>0)
+          .sort((a,b)=>b.score-a.score ||
+            String(a.item.title||"").localeCompare(String(b.item.title||"")))
+          .map(entry=>entry.item);
 
         if(!matches.length){
           const empty=document.createElement("div");
@@ -714,6 +717,31 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
   window.goParent=function(){if(!currentNodeId){selectedNodes.clear();nodeSelectionMode=false;renderHome();return;}const p=getPackage(),f=findNode(p.nodes,currentNodeId);if(f&&f.path.length>1)currentNodeId=f.path[f.path.length-2].id;else currentNodeId=null;selectedNodes.clear();nodeSelectionMode=false;renderDetail();};
   window.expandAll=function(){const p=getPackage();if(p)for(const n of allNodes(p.nodes))if(n.children.length)expanded.add(n.id);renderDetail();};
   window.collapseAll=function(){expanded.clear();renderDetail();};
+  function rankTitle(title, query){
+    const text=String(title||"").toLocaleLowerCase().trim()
+      .replace(/\s+/g," ");
+    const q=String(query||"").toLocaleLowerCase().trim()
+      .replace(/\s+/g," ");
+    if(!q)return 1;
+    if(text===q)return 1000;
+    if(text.startsWith(q))return 900;
+
+    const words=text.split(/[\s\-_/.,:;()[\]{}]+/).filter(Boolean);
+    if(words.some(word=>word.startsWith(q)))return 800;
+    if(text.includes(q))return 700;
+
+    const queryWords=q.split(/[\s\-_/.,:;()[\]{}]+/).filter(Boolean);
+    if(queryWords.length &&
+       queryWords.every(qw=>words.some(word=>word.startsWith(qw)))){
+      return 600;
+    }
+    if(queryWords.length &&
+       queryWords.every(qw=>text.includes(qw))){
+      return 500;
+    }
+    return 0;
+  }
+
   function refreshSearchPackageOptions(){
     const list=$("packageSuggestions");
     if(!list)return;
@@ -723,7 +751,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
   }
   function search(q){
     const out=$("searchResults");
-    const query=q.trim().toLocaleLowerCase();
+    const query=q.trim();
     refreshSearchPackageOptions();
     if(!query){
       out.innerHTML="";
@@ -733,24 +761,44 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
     }
     $("homeView").classList.add("hidden");
     $("detailView").classList.add("hidden");
+
     const scope=$("searchScope").value;
-    const packageFilter=$("searchPackage").value.trim().toLocaleLowerCase();
+    const packageFilter=$("searchPackage").value.trim();
     const hits=[];
+
     for(const p of packages){
-      if(packageFilter && !p.title.toLocaleLowerCase().includes(packageFilter))continue;
-      if(scope!=="concepts" && p.title.toLocaleLowerCase().includes(query)){
-        hits.push({type:"Package",title:p.title,pkg:p,path:p.title,packageHit:true});
+      if(packageFilter && rankTitle(p.title,packageFilter)===0)continue;
+
+      if(scope!=="concepts" && rankTitle(p.title,query)>0){
+        hits.push({
+          type:"Package",title:p.title,pkg:p,path:p.title,
+          packageHit:true
+        });
       }
+
       if(scope!=="packages"){
         for(const n of allNodes(p.nodes)){
-          if(n.title.toLocaleLowerCase().includes(query)){
+          if(rankTitle(n.title,query)>0){
             const f=findNode(p.nodes,n.id);
-            hits.push({type:"Concept",title:n.title,pkg:p,path:p.title+" / "+f.path.map(x=>x.title).join(" / "),node:n});
+            hits.push({
+              type:"Concept",title:n.title,pkg:p,
+              path:p.title+" / "+f.path.map(x=>x.title).join(" / "),
+              node:n
+            });
           }
         }
       }
     }
-    const scopeLabel=scope==="packages"?"package titles":scope==="concepts"?"concepts":"packages and concepts";
+
+    hits.sort((a,b)=>
+      rankTitle(b.title,query)-rankTitle(a.title,query) ||
+      rankTitle(b.pkg.title,packageFilter)-rankTitle(a.pkg.title,packageFilter) ||
+      a.title.localeCompare(b.title)
+    );
+
+    const scopeLabel=scope==="packages"?"package titles":
+      scope==="concepts"?"concepts":"packages and concepts";
+
     out.innerHTML=`<div class="section-title">Search results · ${hits.length} <span class="meta">(${scopeLabel})</span></div>`+
       (hits.length?hits.slice(0,250).map(h=>`<div class="card result" onclick="${h.packageHit?`openPackage('${h.pkg.id}')`:`openSearchHit('${h.pkg.id}','${h.node.id}')`}"><div class="meta">${h.type}</div><strong>${escapeHtml(h.title)}</strong><div class="meta">${escapeHtml(h.path)}</div></div>`).join(""):'<div class="empty">No matching package or concept found with these filters.</div>');
   }
