@@ -35,9 +35,11 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
       <option value="concepts">Concepts only</option>
     </select>
     <label class="filter-label" for="searchPackage">Package</label>
-    <select id="searchPackage" class="filter-select" aria-label="Limit search to a package">
-      <option value="">Any package</option>
-    </select>
+    <input id="searchPackage" class="filter-select"
+      type="search" placeholder="Any package — search by name"
+      list="packageSuggestions" autocomplete="off"
+      aria-label="Search or choose a package">
+    <datalist id="packageSuggestions"></datalist>
   </div>
   <div class="toolbar"><button id="importBtn">＋ Import .txt outline</button><button class="secondary" id="importBackupBtn">Import backup</button><button class="secondary" id="exportBackupBtn">Export backup</button><button class="secondary" id="homeBtn">Library home</button></div>
   <div id="status" class="notice" role="status">Imported packages stay on this device.</div>
@@ -668,11 +670,11 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
   window.expandAll=function(){const p=getPackage();if(p)for(const n of allNodes(p.nodes))if(n.children.length)expanded.add(n.id);renderDetail();};
   window.collapseAll=function(){expanded.clear();renderDetail();};
   function refreshSearchPackageOptions(){
-    const select=$("searchPackage");
-    if(!select)return;
-    const previous=select.value;
-    select.innerHTML='<option value="">Any package</option>'+packages.map(p=>'<option value="'+escapeHtml(p.id)+'">'+escapeHtml(p.title)+'</option>').join("");
-    if(packages.some(p=>p.id===previous))select.value=previous;
+    const list=$("packageSuggestions");
+    if(!list)return;
+    list.innerHTML=packages.map(p=>
+      `<option value="${escapeHtml(p.title)}"></option>`
+    ).join("");
   }
   function search(q){
     const out=$("searchResults");
@@ -687,10 +689,10 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
     $("homeView").classList.add("hidden");
     $("detailView").classList.add("hidden");
     const scope=$("searchScope").value;
-    const selectedPackageId=$("searchPackage").value;
+    const packageFilter=$("searchPackage").value.trim().toLocaleLowerCase();
     const hits=[];
     for(const p of packages){
-      if(selectedPackageId && p.id!==selectedPackageId)continue;
+      if(packageFilter && !p.title.toLocaleLowerCase().includes(packageFilter))continue;
       if(scope!=="concepts" && p.title.toLocaleLowerCase().includes(query)){
         hits.push({type:"Package",title:p.title,pkg:p,path:p.title,packageHit:true});
       }
@@ -715,7 +717,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
   $("homeBtn").addEventListener("click",()=>{$("search").value="";currentPackageId=null;currentNodeId=null;packageStarredOnly=false;renderHome();});
   $("search").addEventListener("input",e=>search(e.target.value));
   $("searchScope").addEventListener("change",()=>search($("search").value));
-  $("searchPackage").addEventListener("change",()=>search($("search").value));
+  $("searchPackage").addEventListener("input",()=>search($("search").value));
   window.canGoBackInLibrary=()=>!!currentPackageId||!!$("search").value;
   window.handleAndroidBack=()=>{if($("search").value){$("search").value="";search("");return true;}if(currentNodeId){goParent();return true;}if(currentPackageId){currentPackageId=null;renderHome();return true;}return false;};
 
