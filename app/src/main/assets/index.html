@@ -609,10 +609,18 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
       p.nodes.push(...moving);
     }
     selectedNodes.clear();
-    currentNodeId=null;
+    nodeSelectionMode=false;
+    currentNodeId=destination?destination.id:null;
+    packageStarredOnly=false;
+    if(destination){
+      const destinationPath=findNode(p.nodes,destination.id);
+      if(destinationPath)
+        for(const item of destinationPath.path.slice(0,-1))expanded.add(item.id);
+      expanded.add(destination.id);
+    }
     p.editedAt=new Date().toISOString();
     save();renderDetail();
-    setStatus(moving.length+" item(s) moved with their descendants.");
+    setStatus(moving.length+" item(s) moved. Opened the destination.");
   };
 
   window.transferSelectedNodes=async function(){
@@ -662,10 +670,19 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
     sourcePackage.editedAt=now;
     destination.editedAt=now;
     selectedNodes.clear();
-    currentNodeId=null;
+    nodeSelectionMode=false;
+    currentPackageId=destination.id;
+    currentNodeId=destinationTarget?destinationTarget.id:null;
+    packageStarredOnly=false;
+    if(destinationTarget){
+      const targetPath=findNode(destination.nodes,destinationTarget.id);
+      if(targetPath)
+        for(const item of targetPath.path.slice(0,-1))expanded.add(item.id);
+      expanded.add(destinationTarget.id);
+    }
     save();renderDetail();
-    setStatus(moving.length+" item(s) transferred to "+
-      '"'+destination.title+'" with their descendants.');
+    setStatus(moving.length+" item(s) transferred. Opened "+
+      (destinationTarget?destinationTarget.title:destination.title)+".");
   };
 
   window.selectNode=function(nid){openNode(nid);};
