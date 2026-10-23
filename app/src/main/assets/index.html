@@ -458,43 +458,45 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
         "position:fixed;inset:0;z-index:10000;display:flex;"+
         "align-items:center;justify-content:center;padding:16px;"+
         "background:rgba(0,0,0,.62)";
+
       const panel=document.createElement("div");
       panel.style.cssText=
         "width:100%;max-width:520px;max-height:85vh;overflow:auto;"+
         "padding:18px;border-radius:16px;background:var(--panel);"+
         "color:var(--text);box-shadow:0 8px 32px #0005";
+
       const heading=document.createElement("div");
       heading.textContent=title;
-      heading.style.cssText="font-size:18px;font-weight:750;margin-bottom:12px";
+      heading.style.cssText=
+        "font-size:18px;font-weight:750;margin-bottom:12px";
+
       const help=document.createElement("p");
       help.className="notice";
-      help.textContent="Tap the destination you want.";
-      const select=document.createElement("select");
-      select.style.cssText=
-        "display:block;width:100%;padding:13px;margin:8px 0 16px;"+
+      help.textContent="Type a name to search, then tap your destination.";
+
+      const input=document.createElement("input");
+      input.type="search";
+      input.placeholder="Search by name...";
+      input.autocomplete="off";
+      input.setAttribute("aria-label","Search destinations by name");
+      input.style.cssText=
+        "display:block;width:100%;padding:13px;margin:8px 0 12px;"+
         "border:1px solid var(--line);border-radius:10px;"+
-        "background:var(--panel);color:var(--text);font:inherit";
-      if(includeRoot){
-        const option=document.createElement("option");
-        option.value="root";
-        option.textContent="0. Package root";
-        select.appendChild(option);
-      }
-      items.forEach((item,index)=>{
-        const option=document.createElement("option");
-        option.value=String(index);
-        option.textContent=(index+1)+". "+item.title;
-        select.appendChild(option);
-      });
+        "background:var(--panel);color:var(--text);font:inherit;"+
+        "font-size:16px;box-sizing:border-box";
+
+      const results=document.createElement("div");
+      results.style.cssText="max-height:48vh;overflow:auto";
+
       const actions=document.createElement("div");
-      actions.style.cssText="display:flex;gap:8px;justify-content:flex-end";
+      actions.style.cssText=
+        "display:flex;justify-content:flex-end;margin-top:12px";
+
       const cancel=document.createElement("button");
       cancel.type="button";
       cancel.className="secondary";
       cancel.textContent="Cancel";
-      const choose=document.createElement("button");
-      choose.type="button";
-      choose.textContent="Choose";
+
       let finished=false;
       function finish(value){
         if(finished)return;
@@ -506,21 +508,64 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 8px}
       function onKey(event){
         if(event.key==="Escape")finish(undefined);
       }
+
+      function addChoice(label,value){
+        const button=document.createElement("button");
+        button.type="button";
+        button.className="secondary destination-choice";
+        button.textContent=label;
+        button.style.cssText=
+          "display:block;width:100%;text-align:left;margin:6px 0;"+
+          "padding:12px;overflow-wrap:anywhere;white-space:normal";
+        button.onclick=()=>finish(value);
+        results.appendChild(button);
+      }
+
+      function renderChoices(){
+        results.innerHTML="";
+        if(includeRoot){
+          addChoice("Package root (top level)",null);
+        }
+
+        const query=input.value.trim().toLocaleLowerCase();
+        const matches=items.filter(item=>
+          String(item.title||"").toLocaleLowerCase().includes(query)
+        );
+
+        if(!matches.length){
+          const empty=document.createElement("div");
+          empty.className="empty";
+          empty.textContent="No matching destinations. Try another name.";
+          results.appendChild(empty);
+          return;
+        }
+
+        matches.slice(0,100).forEach(item=>
+          addChoice(item.title,item)
+        );
+
+        if(matches.length>100){
+          const note=document.createElement("p");
+          note.className="notice";
+          note.textContent=
+            "Showing the first 100 matches. Type more to narrow the list.";
+          results.appendChild(note);
+        }
+      }
+
+      input.addEventListener("input",renderChoices);
       cancel.onclick=()=>finish(undefined);
-      choose.onclick=()=>{
-        finish(select.value==="root"
-          ? null
-          : items[Number(select.value)]);
-      };
       overlay.addEventListener("click",event=>{
         if(event.target===overlay)finish(undefined);
       });
-      actions.append(cancel,choose);
-      panel.append(heading,help,select,actions);
+
+      actions.appendChild(cancel);
+      panel.append(heading,help,input,results,actions);
       overlay.appendChild(panel);
       document.body.appendChild(overlay);
       document.addEventListener("keydown",onKey);
-      select.focus();
+      renderChoices();
+      input.focus();
     });
   }
 
